@@ -198,3 +198,123 @@ export default function ProfilePage() {
             <TabsTrigger value="activity" className="gap-2">
               <FileCheck className="h-4 w-4" />
               Activity
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="gap-2">
+              <Award className="h-4 w-4" />
+              Settings
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-3">
+              {/* Avatar + Info Card */}
+              <Card className="lg:col-span-1">
+                <CardContent className="flex flex-col items-center pt-6 pb-6">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
+                    {initials}
+                  </div>
+                  <h2 className="mt-4 text-xl font-semibold text-gray-900">
+                    {profile?.name}
+                  </h2>
+                  <p className="text-sm text-gray-500">{profile?.email}</p>
+                  <Badge variant="secondary" className="mt-2 capitalize">
+                    {profile?.role}
+                  </Badge>
+                  {profile?.organizationName && (
+                    <div className="mt-3 flex items-center gap-1 text-sm text-gray-500">
+                      <Building2 className="h-4 w-4" />
+                      {profile.organizationName}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center gap-1 text-sm text-gray-500">
+                    <Mail className="h-4 w-4" />
+                    <span className="text-xs">
+                      Member since{" "}
+                      {profile?.createdAt ? formatDate(profile.createdAt) : "—"}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 w-full border-t pt-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Credentials</span>
+                      <span className="font-medium text-gray-900">
+                        {profile?.stats?.credentials ?? 0}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex justify-between text-sm">
+                      <span className="text-gray-500">Assessments</span>
+                      <span className="font-medium text-gray-900">
+                        {profile?.stats?.assessments ?? 0}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Edit Profile + Wallet */}
+              <div className="space-y-6 lg:col-span-2">
+                <EditProfileForm
+                  profile={profile}
+                  onSuccess={fetchProfile}
+                />
+                <WalletSection
+                  walletAddress={profile?.walletAddress ?? null}
+                  onSuccess={fetchProfile}
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Skills Tab (candidates only) */}
+          {isCandidate && (
+            <TabsContent value="skills">
+              <SkillsTab skills={profile?.skills ?? []} />
+            </TabsContent>
+          )}
+
+          {/* Activity Tab */}
+          <TabsContent value="activity">
+            <ActivityTab activity={activity} />
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings">
+            <SettingsTab />
+          </TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+}
+
+/* ---------- Edit Profile Form ---------- */
+
+function EditProfileForm({
+  profile,
+  onSuccess,
+}: {
+  profile: ProfileData | null;
+  onSuccess: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: profile?.name ?? "",
+    bio: profile?.bio ?? "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    if (profile) {
+      setFormData({ name: profile.name, bio: profile.bio ?? "" });
+    }
+  }, [profile]);
+
+  async function handleSave() {
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    const res = await fetch("/api/users/profile", {
