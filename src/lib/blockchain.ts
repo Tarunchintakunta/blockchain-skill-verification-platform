@@ -28,3 +28,33 @@ function getContract(signerOrProvider?: ethers.Signer | ethers.Provider) {
     signerOrProvider || getProvider()
   );
 }
+
+export async function issueCredentialOnChain(
+  holderAddress: string,
+  credentialHash: string,
+  metadataURI: string
+): Promise<{ txHash: string; tokenId: string }> {
+  const signer = getSigner();
+  const contract = getContract(signer);
+
+  const tx = await contract.issueCredential(
+    holderAddress,
+    credentialHash,
+    metadataURI
+  );
+  const receipt = await tx.wait();
+
+  const event = receipt.logs.find(
+    (log: ethers.Log) => log.topics[0] === ethers.id("CredentialIssued(uint256,address,address,string)")
+  );
+
+  const tokenId = event ? ethers.toBigInt(event.topics[1]).toString() : "0";
+
+  return {
+    txHash: receipt.hash,
+    tokenId,
+  };
+}
+
+export async function verifyCredentialOnChain(tokenId: string): Promise<{
+  holder: string;
