@@ -248,3 +248,153 @@ export default function AssessmentsPage() {
                           <FileCheck className="h-5 w-5 text-purple-600" />
                         </div>
                         <div className="min-w-0">
+                          <CardTitle className="text-base leading-snug">
+                            {assessment.title}
+                          </CardTitle>
+                          <CardDescription className="mt-0.5">
+                            {questionCount} question{questionCount !== 1 ? "s" : ""}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <Badge variant={diff.variant} className="shrink-0">
+                        {diff.label}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="flex flex-1 flex-col gap-4">
+                    {assessment.description && (
+                      <p className="text-sm text-gray-500 line-clamp-2">
+                        {assessment.description}
+                      </p>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-1.5 text-gray-600">
+                        <Clock className="h-4 w-4 text-gray-400" />
+                        <span>{assessment.duration} min</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-gray-600">
+                        <Target className="h-4 w-4 text-gray-400" />
+                        <span>Pass: {assessment.passingScore}%</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-gray-600">
+                        <BarChart3 className="h-4 w-4 text-gray-400" />
+                        <span>{assessment.totalAttempts ?? 0} attempts</span>
+                      </div>
+                      {assessment.averageScore !== null && assessment.averageScore !== undefined ? (
+                        <div className="flex items-center gap-1.5 text-gray-600">
+                          <TrendingUp className="h-4 w-4 text-gray-400" />
+                          <span>Avg: {Math.round(assessment.averageScore)}%</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-gray-500 text-xs col-span-1">
+                          {formatDate(assessment.createdAt)}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-auto pt-2">
+                      <Button
+                        className="w-full"
+                        onClick={() => handleStartAssessment(assessment)}
+                      >
+                        Take Assessment
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+function AssessmentRunner({
+  assessment,
+  onComplete,
+  onCancel,
+}: {
+  assessment: Assessment;
+  onComplete: (result: SubmissionResult) => void;
+  onCancel: () => void;
+}) {
+  const questions = assessment.questions ?? [];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [timeRemaining, setTimeRemaining] = useState(assessment.duration * 60);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = useCallback(async () => {
+    setSubmitting(true);
+    setError("");
+
+    const res = await fetch("/api/assessments/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        assessmentId: assessment.id,
+        answers,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error || "Failed to submit assessment");
+      setSubmitting(false);
+      return;
+    }
+
+    const result: SubmissionResult = {
+      score: data.data.result.score,
+      passed: data.data.result.passed,
+      analysis: data.data.result.analysis,
+    };
+
+    onComplete(result);
+  }, [assessment.id, answers, onComplete]);
+
+  useEffect(() => {
+    if (timeRemaining <= 0) {
+      handleSubmit();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeRemaining, handleSubmit]);
+
+  const currentQuestion = questions[currentIndex];
+  const totalQuestions = questions.length;
+  const answeredCount = Object.keys(answers).length;
+  const progressPercent = totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
+
+  const minutes = Math.floor(timeRemaining / 60);
+  const seconds = timeRemaining % 60;
+  const timeDisplay = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  const isTimeWarning = timeRemaining < 120;
+
+  function handleSelectOption(questionId: string, optionIndex: number) {
+    setAnswers((prev) => ({ ...prev, [questionId]: optionIndex }));
+  }
+
+  function handlePrev() {
+    setCurrentIndex((i) => Math.max(0, i - 1));
+  }
+
+  function handleNext() {
+    setCurrentIndex((i) => Math.min(totalQuestions - 1, i + 1));
