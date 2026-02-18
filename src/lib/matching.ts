@@ -78,3 +78,43 @@ export function calculateJobMatch(
     );
 
     if (candidateSkill) {
+      let skillScore =
+        Math.min(candidateSkill.proficiencyLevel / pref.minLevel, 1.2) * 100;
+
+      if (candidateSkill.isVerified) {
+        skillScore = Math.min(skillScore * verifiedMultiplier, 100);
+        verifiedCount++;
+      }
+
+      preferredScore += skillScore;
+      breakdown.push({
+        skillName: pref.skillName,
+        matchScore: Math.round(skillScore),
+        isVerified: candidateSkill.isVerified,
+        candidateLevel: candidateSkill.proficiencyLevel,
+        requiredLevel: pref.minLevel,
+      });
+    }
+  }
+
+  const maxRequired = job.requiredSkills.length * 100;
+  const maxPreferred = job.preferredSkills.length * 100;
+
+  const normalizedRequired =
+    maxRequired > 0 ? requiredScore / maxRequired : 0;
+  const normalizedPreferred =
+    maxPreferred > 0 ? preferredScore / maxPreferred : 0;
+
+  const totalSkills =
+    job.requiredSkills.length + job.preferredSkills.length;
+  const verifiedBonus =
+    totalSkills > 0 ? (verifiedCount / totalSkills) * 10 : 0;
+
+  const overallScore = Math.min(
+    Math.round(
+      (normalizedRequired * requiredWeight +
+        normalizedPreferred * preferredWeight) *
+        100 +
+        verifiedBonus
+    ),
+    100
