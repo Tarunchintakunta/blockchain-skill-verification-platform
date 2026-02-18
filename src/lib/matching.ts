@@ -118,3 +118,33 @@ export function calculateJobMatch(
         verifiedBonus
     ),
     100
+  );
+
+  const confidence =
+    totalSkills > 0
+      ? Math.round(
+          (breakdown.filter((b) => b.candidateLevel > 0).length /
+            totalSkills) *
+            100
+        )
+      : 0;
+
+  let recommendation: string;
+  if (overallScore >= 85) {
+    recommendation = "Excellent match. Candidate strongly recommended.";
+  } else if (overallScore >= 70) {
+    recommendation = "Good match. Candidate meets most requirements.";
+  } else if (overallScore >= 50) {
+    recommendation =
+      "Partial match. Candidate may need additional skill development.";
+  } else {
+    recommendation =
+      "Low match. Significant skill gaps identified.";
+  }
+
+  return {
+    overallScore,
+    skillBreakdown: breakdown,
+    verifiedBonus: Math.round(verifiedBonus),
+    recommendation,
+    confidence,
