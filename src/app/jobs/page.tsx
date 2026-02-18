@@ -798,3 +798,153 @@ function ApplicationForm({
           <div className="flex items-center gap-1.5">
             <DollarSign className="h-3.5 w-3.5 text-gray-400" />
             {job.salaryMin && job.salaryMax
+              ? `${formatCurrency(job.salaryMin)} – ${formatCurrency(job.salaryMax)}`
+              : job.salaryMin
+              ? `From ${formatCurrency(job.salaryMin)}`
+              : `Up to ${formatCurrency(job.salaryMax)}`}
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Cover Letter
+        </label>
+        <Textarea
+          placeholder="Tell the employer why you're a great fit for this role..."
+          value={coverLetter}
+          onChange={(e) => setCoverLetter(e.target.value)}
+          rows={6}
+        />
+      </div>
+
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Submitting..." : "Submit Application"}
+      </Button>
+    </form>
+  );
+}
+
+function JobDetailDialog({
+  job,
+  open,
+  onOpenChange,
+  showApply,
+}: {
+  job: Job;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  showApply: boolean;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <DialogTitle className="text-xl">{job.title}</DialogTitle>
+              <DialogDescription className="flex items-center gap-1 mt-1">
+                <Building2 className="h-3.5 w-3.5" />
+                {job.company}
+              </DialogDescription>
+            </div>
+            <span
+              className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${
+                jobTypeColors[job.type] || "bg-gray-100 text-gray-800"
+              }`}
+            >
+              {job.type}
+            </span>
+          </div>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-3 text-sm text-gray-600">
+            <span className="flex items-center gap-1.5">
+              <MapPin className="h-4 w-4 text-gray-400" />
+              {job.location}
+            </span>
+            {(job.salaryMin || job.salaryMax) && (
+              <span className="flex items-center gap-1.5">
+                <DollarSign className="h-4 w-4 text-gray-400" />
+                {job.salaryMin && job.salaryMax
+                  ? `${formatCurrency(job.salaryMin)} – ${formatCurrency(job.salaryMax)}`
+                  : job.salaryMin
+                  ? `From ${formatCurrency(job.salaryMin)}`
+                  : `Up to ${formatCurrency(job.salaryMax)}`}
+              </span>
+            )}
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4 text-gray-400" />
+              Posted {formatDate(job.createdAt)}
+            </span>
+          </div>
+
+          <div>
+            <h4 className="mb-2 text-sm font-semibold text-gray-900">
+              Job Description
+            </h4>
+            <p className="text-sm text-gray-600 whitespace-pre-wrap">
+              {job.description}
+            </p>
+          </div>
+
+          {job.requiredSkillIds.length > 0 && (
+            <div>
+              <h4 className="mb-2 text-sm font-semibold text-gray-900">
+                Required Skills ({job.requiredSkillIds.length})
+              </h4>
+              <div className="flex flex-wrap gap-1.5">
+                {job.requiredSkillIds.map((id) => (
+                  <Badge key={id} variant="default" className="text-xs">
+                    Skill ID: {id.slice(0, 8)}...
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {job.preferredSkillIds.length > 0 && (
+            <div>
+              <h4 className="mb-2 text-sm font-semibold text-gray-900">
+                Preferred Skills ({job.preferredSkillIds.length})
+              </h4>
+              <div className="flex flex-wrap gap-1.5">
+                {job.preferredSkillIds.map((id) => (
+                  <Badge key={id} variant="secondary" className="text-xs">
+                    Skill ID: {id.slice(0, 8)}...
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {showApply && (
+            <div className="pt-2">
+              <ApplyButton job={job} onApplied={() => onOpenChange(false)} />
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EmployerView({
+  jobs,
+  loading,
+  searchQuery,
+  setSearchQuery,
+  filterType,
+  setFilterType,
+  setSelectedJob,
+  setDetailOpen,
+}: {
+  jobs: Job[];
+  loading: boolean;
+  searchQuery: string;
+  setSearchQuery: (v: string) => void;
+  filterType: string;
+  setFilterType: (v: string) => void;
+  setSelectedJob: (job: Job | null) => void;
+  setDetailOpen: (open: boolean) => void;
