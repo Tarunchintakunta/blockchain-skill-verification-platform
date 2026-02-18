@@ -448,3 +448,140 @@ export default function VerifyPage() {
                   >
                     View on PolygonScan
                     <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        )}
+
+        {/* How It Works */}
+        <div className="mb-8">
+          <h2 className="mb-4 text-xl font-bold text-gray-900">
+            How Verification Works
+          </h2>
+          <div className="grid gap-6 md:grid-cols-3">
+            {howItWorksSteps.map((step) => {
+              const StepIcon = step.icon;
+              return (
+                <Card key={step.step} className="relative overflow-hidden">
+                  <CardContent className="p-6">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-lg ${step.bg}`}
+                      >
+                        <StepIcon className={`h-5 w-5 ${step.color}`} />
+                      </div>
+                      <span className="text-3xl font-black text-gray-100 select-none">
+                        {step.step}
+                      </span>
+                    </div>
+                    <h3 className="mb-2 text-base font-semibold text-gray-900">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-gray-500">
+                      {step.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Recent Verifications */}
+        {recentVerifications.length > 0 && (
+          <div>
+            <h2 className="mb-4 text-xl font-bold text-gray-900">
+              Recent Verifications
+            </h2>
+            <Card>
+              <CardContent className="divide-y divide-gray-100 p-0">
+                {recentVerifications.map((v) => (
+                  <div
+                    key={`${v.tokenId}-${v.queriedAt}`}
+                    className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                          v.data.isValid && v.data.onChain
+                            ? "bg-emerald-100"
+                            : "bg-red-100"
+                        }`}
+                      >
+                        {v.data.isValid && v.data.onChain ? (
+                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-red-500" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-mono text-sm font-medium text-gray-900">
+                          Token #{v.tokenId}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Verified {formatDate(v.queriedAt)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Badge
+                        variant={
+                          v.data.isValid && v.data.onChain
+                            ? "success"
+                            : "destructive"
+                        }
+                      >
+                        {v.data.isValid && v.data.onChain
+                          ? "Valid"
+                          : v.data.onChain
+                          ? "Revoked"
+                          : "Not Found"}
+                      </Badge>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTokenInput(v.tokenId);
+                          setResult(v);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Empty state for recent verifications */}
+        {recentVerifications.length === 0 && !result && (
+          <div className="mt-2">
+            <h2 className="mb-4 text-xl font-bold text-gray-900">
+              Recent Verifications
+            </h2>
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+                  <Search className="h-6 w-6 text-gray-400" />
+                </div>
+                <h3 className="mt-4 text-base font-medium text-gray-900">
+                  No verifications yet
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Enter a Token ID above to verify a credential. Your session
+                  history will appear here.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
