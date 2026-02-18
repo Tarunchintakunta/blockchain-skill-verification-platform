@@ -178,3 +178,63 @@ export default function HomePage() {
           <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
               <div
+                key={feature.title}
+                className="group rounded-xl border border-gray-200 bg-white p-8 transition-all hover:border-blue-200 hover:shadow-lg"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  <feature.icon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-gray-900">
+                  {feature.title}
+                </h3>
+                <p className="mt-2 text-gray-500">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-gray-50 py-24 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+              Built for Every Stakeholder
+            </h2>
+            <p className="mt-4 text-lg text-gray-500">
+              Whether you&apos;re a candidate, institution, or employer,
+              SkillChain has you covered.
+            </p>
+          </div>
+
+          <div className="mt-16 grid gap-8 md:grid-cols-3">
+            {roles.map((role) => (
+              <div
+                key={role.title}
+                className="rounded-xl border border-gray-200 bg-white p-8"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                  <role.icon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 text-xl font-semibold text-gray-900">
+                  {role.title}
+                </h3>
+                <ul className="mt-4 space-y-3">
+                  {role.points.map((point) => (
+                    <li key={point} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-500 mt-0.5 shrink-0" />
+                      <span className="text-gray-600">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="rounded-2xl bg-blue-600 p-12 text-center text-white">
+            <h2 className="text-3xl font-bold sm:text-4xl">
+              Ready to Build Your Verified Profile?
+            </h2>
