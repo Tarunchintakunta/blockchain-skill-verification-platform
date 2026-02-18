@@ -498,3 +498,153 @@ function CandidateView({
       <TabsContent value="browse">
         <SearchFilterBar
           searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          filterType={filterType}
+          setFilterType={setFilterType}
+        />
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+          </div>
+        ) : jobs.length === 0 ? (
+          <EmptyState message="No jobs match your search criteria" />
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {jobs.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                onClick={() => {
+                  setSelectedJob(job);
+                  setDetailOpen(true);
+                }}
+                actionSlot={
+                  <ApplyButton
+                    job={job}
+                    onApplied={() => {}}
+                  />
+                }
+              />
+            ))}
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="applications">
+        {appsLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+          </div>
+        ) : applications.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Briefcase className="h-12 w-12 text-gray-300" />
+              <h3 className="mt-4 text-lg font-medium text-gray-900">
+                No applications yet
+              </h3>
+              <p className="mt-1 text-gray-500">
+                Browse jobs and apply to get started
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {applications.map((app) => {
+              const job = app.job || jobById(app.jobId);
+              const statusConf =
+                applicationStatusConfig[app.status] ||
+                applicationStatusConfig.pending;
+              return (
+                <Card key={app.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100">
+                          <Briefcase className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-900 truncate">
+                            {job?.title || "Unknown Position"}
+                          </p>
+                          <p className="text-sm text-gray-500 flex items-center gap-1">
+                            <Building2 className="h-3 w-3" />
+                            {job?.company || "Unknown Company"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {app.matchScore !== undefined && (
+                          <Badge variant="secondary" className="gap-1">
+                            <TrendingUp className="h-3 w-3" />
+                            {app.matchScore}% match
+                          </Badge>
+                        )}
+                        <Badge variant={statusConf.variant}>
+                          {statusConf.label}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center gap-4 text-sm text-gray-500">
+                      {job?.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3.5 w-3.5" />
+                          {job.location}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3.5 w-3.5" />
+                        Applied {formatDate(app.createdAt)}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="recommended">
+        {matchLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+          </div>
+        ) : matchedJobs.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <TrendingUp className="h-12 w-12 text-gray-300" />
+              <h3 className="mt-4 text-lg font-medium text-gray-900">
+                No recommendations yet
+              </h3>
+              <p className="mt-1 text-gray-500">
+                Add skills and credentials to get personalized job matches
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[...matchedJobs]
+              .sort((a, b) => b.match.overallScore - a.match.overallScore)
+              .map((match) => {
+                const job = jobById(match.jobId);
+                if (!job) return null;
+                const score = match.match.overallScore;
+                const scoreColor =
+                  score >= 80
+                    ? "bg-emerald-100 text-emerald-800"
+                    : score >= 60
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-amber-100 text-amber-800";
+                return (
+                  <JobCard
+                    key={match.jobId}
+                    job={job}
+                    onClick={() => {
+                      setSelectedJob(job);
+                      setDetailOpen(true);
+                    }}
+                    actionSlot={
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-xs font-medium flex items-center gap-1 ${scoreColor}`}
+                        >
