@@ -128,3 +128,53 @@ export default function HomePage() {
           <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">
             Verify Skills with{" "}
             <span className="text-blue-600">Blockchain Trust</span>
+          </h1>
+          <p className="mt-6 text-lg text-gray-600 sm:text-xl max-w-2xl mx-auto">
+            The integrated platform that combines blockchain credentials,
+            AI-powered assessments, and machine learning job matching to
+            revolutionize professional verification.
+          </p>
+          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <Link href="/auth/signup">
+              <Button size="lg" className="gap-2 text-base px-8">
+                Start Verifying
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/verify">
+              <Button variant="outline" size="lg" className="text-base px-8">
+                Verify a Credential
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-gray-200 bg-gray-50 py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            {stats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className="text-3xl font-bold text-blue-600">{stat.value}</p>
+                <p className="mt-1 text-sm text-gray-500">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+              Everything You Need for Skill Verification
+            </h2>
+            <p className="mt-4 text-lg text-gray-500 max-w-2xl mx-auto">
+              A comprehensive platform bridging blockchain, AI, and machine
+              learning for the future of professional credentialing.
+            </p>
+          </div>
+
+          <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {features.map((feature) => (
+              <div
