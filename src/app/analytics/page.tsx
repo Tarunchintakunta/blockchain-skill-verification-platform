@@ -298,3 +298,153 @@ export default function AnalyticsPage() {
                       {skillsDemandData.map((entry, index) => (
                         <Cell key={index} fill={entry.fill} />
                       ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Verification Trend */}
+          <TabsContent value="verifications">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-emerald-600" />
+                  <div>
+                    <CardTitle>Verification Trend</CardTitle>
+                    <CardDescription>
+                      Monthly blockchain credential verifications over the past
+                      6 months
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={380}>
+                  <AreaChart
+                    data={verificationTrendData}
+                    margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                  >
+                    <defs>
+                      <linearGradient
+                        id="verificationGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#10b981"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#10b981"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#f0f0f0"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fontSize: 12, fill: "#6b7280" }}
+                    />
+                    <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
+                      type="monotone"
+                      dataKey="verifications"
+                      name="Verifications"
+                      stroke="#10b981"
+                      strokeWidth={2.5}
+                      fill="url(#verificationGradient)"
+                      dot={{ r: 5, fill: "#10b981", strokeWidth: 0 }}
+                      activeDot={{ r: 7 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Assessment Performance */}
+          <TabsContent value="assessments">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-indigo-600" />
+                  <div>
+                    <CardTitle>Assessment Performance</CardTitle>
+                    <CardDescription>
+                      Pass rate and average scores across skill categories
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={380}>
+                  <BarChart
+                    data={assessmentPerformanceData}
+                    margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#f0f0f0"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="category"
+                      tick={{ fontSize: 12, fill: "#6b7280" }}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 12, fill: "#6b7280" }}
+                      domain={[0, 100]}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend
+                      wrapperStyle={{ fontSize: "12px", paddingTop: "16px" }}
+                    />
+                    <Bar
+                      dataKey="passRate"
+                      name="Pass Rate (%)"
+                      fill="#6366f1"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="avgScore"
+                      name="Avg Score (%)"
+                      fill="#06b6d4"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Credential Distribution */}
+          <TabsContent value="credentials">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Award className="h-5 w-5 text-purple-600" />
+                    <div>
+                      <CardTitle>Credential Distribution</CardTitle>
+                      <CardDescription>
+                        Breakdown of issued credentials by type
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <PieChart>
+                      <Pie
+                        data={credentialDistributionData}
