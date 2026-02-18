@@ -448,3 +448,320 @@ export default function AnalyticsPage() {
                     <PieChart>
                       <Pie
                         data={credentialDistributionData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={70}
+                        outerRadius={130}
+                        paddingAngle={3}
+                        dataKey="value"
+                        nameKey="name"
+                        label={({ name, value }) => `${name} ${value}%`}
+                        labelLine={true}
+                      >
+                        {credentialDistributionData.map((entry, index) => (
+                          <Cell
+                            key={entry.name}
+                            fill={PIE_COLORS[index % PIE_COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value) => [`${value}%`, "Share"]}
+                      />
+                      <Legend
+                        wrapperStyle={{ fontSize: "13px" }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Summary table alongside */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Credential Breakdown</CardTitle>
+                  <CardDescription>
+                    Detailed issuance numbers by credential type
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-5">
+                    {credentialDistributionData.map((item, index) => (
+                      <div key={item.name} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="inline-block h-3 w-3 rounded-full"
+                              style={{
+                                backgroundColor:
+                                  PIE_COLORS[index % PIE_COLORS.length],
+                              }}
+                            />
+                            <span className="font-medium text-gray-700">
+                              {item.name}
+                            </span>
+                          </div>
+                          <span className="font-semibold text-gray-900">
+                            {item.value}%
+                          </span>
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${item.value}%`,
+                              backgroundColor:
+                                PIE_COLORS[index % PIE_COLORS.length],
+                            }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-400">
+                          ~
+                          {Math.round(
+                            (item.value / 100) * 12847
+                          ).toLocaleString()}{" "}
+                          credentials
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Job Market */}
+          <TabsContent value="jobs">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5 text-amber-600" />
+                  <div>
+                    <CardTitle>Job Market Overview</CardTitle>
+                    <CardDescription>
+                      Monthly job postings and application volume over the past
+                      6 months
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={380}>
+                  <AreaChart
+                    data={jobMarketData}
+                    margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                  >
+                    <defs>
+                      <linearGradient
+                        id="postingsGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#f59e0b"
+                          stopOpacity={0.35}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#f59e0b"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                      <linearGradient
+                        id="applicationsGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#3b82f6"
+                          stopOpacity={0.25}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#3b82f6"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#f0f0f0"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fontSize: 12, fill: "#6b7280" }}
+                    />
+                    <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend
+                      wrapperStyle={{ fontSize: "12px", paddingTop: "16px" }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="applications"
+                      name="Applications"
+                      stroke="#3b82f6"
+                      strokeWidth={2.5}
+                      fill="url(#applicationsGradient)"
+                      dot={{ r: 4, fill: "#3b82f6", strokeWidth: 0 }}
+                      activeDot={{ r: 6 }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="postings"
+                      name="Job Postings"
+                      stroke="#f59e0b"
+                      strokeWidth={2.5}
+                      fill="url(#postingsGradient)"
+                      dot={{ r: 4, fill: "#f59e0b", strokeWidth: 0 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Match Score Distribution */}
+          <TabsContent value="matches">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-cyan-600" />
+                    <div>
+                      <CardTitle>Match Score Distribution</CardTitle>
+                      <CardDescription>
+                        Distribution of candidate-to-job match scores across
+                        score ranges
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart
+                      data={matchScoreData}
+                      margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="#f0f0f0"
+                        vertical={false}
+                      />
+                      <XAxis
+                        dataKey="range"
+                        tick={{ fontSize: 12, fill: "#6b7280" }}
+                      />
+                      <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar
+                        dataKey="count"
+                        name="Candidates"
+                        radius={[4, 4, 0, 0]}
+                      >
+                        <Cell fill="#ef4444" />
+                        <Cell fill="#f59e0b" />
+                        <Cell fill="#06b6d4" />
+                        <Cell fill="#10b981" />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Insight cards alongside */}
+              <div className="space-y-4">
+                <Card>
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">High Match Rate</p>
+                        <p className="mt-0.5 text-2xl font-bold text-gray-900">
+                          26.4%
+                        </p>
+                        <p className="mt-0.5 text-xs text-gray-400">
+                          Candidates scoring 76–100%
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-emerald-100 p-3">
+                        <TrendingUp className="h-5 w-5 text-emerald-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          Mid-Range Majority
+                        </p>
+                        <p className="mt-0.5 text-2xl font-bold text-gray-900">
+                          39.7%
+                        </p>
+                        <p className="mt-0.5 text-xs text-gray-400">
+                          Candidates scoring 51–75%
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-cyan-100 p-3">
+                        <BarChart3 className="h-5 w-5 text-cyan-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          Total Match Events
+                        </p>
+                        <p className="mt-0.5 text-2xl font-bold text-gray-900">
+                          2,030
+                        </p>
+                        <p className="mt-0.5 text-xs text-gray-400">
+                          Across all score ranges
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-indigo-100 p-3">
+                        <Users className="h-5 w-5 text-indigo-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          Blockchain Verified
+                        </p>
+                        <p className="mt-0.5 text-2xl font-bold text-gray-900">
+                          89.2%
+                        </p>
+                        <p className="mt-0.5 text-xs text-gray-400">
+                          Of high-match candidates
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-purple-100 p-3">
+                        <Shield className="h-5 w-5 text-purple-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+}
