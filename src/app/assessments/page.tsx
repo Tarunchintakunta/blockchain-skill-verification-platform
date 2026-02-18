@@ -398,3 +398,153 @@ function AssessmentRunner({
 
   function handleNext() {
     setCurrentIndex((i) => Math.min(totalQuestions - 1, i + 1));
+  }
+
+  if (!currentQuestion) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <AlertCircle className="h-12 w-12 text-amber-500" />
+          <h3 className="mt-4 text-lg font-medium text-gray-900">No questions available</h3>
+          <Button className="mt-4" onClick={onCancel}>Go Back</Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header bar */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold text-gray-900">{assessment.title}</h2>
+              <p className="text-sm text-gray-500">
+                Question {currentIndex + 1} of {totalQuestions}
+              </p>
+            </div>
+            <div
+              className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold ${
+                isTimeWarning
+                  ? "bg-red-100 text-red-700"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              <Clock className="h-4 w-4" />
+              {timeDisplay}
+            </div>
+          </div>
+          <div className="mt-3 space-y-1">
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span>{answeredCount} of {totalQuestions} answered</span>
+              <span>{progressPercent}%</span>
+            </div>
+            <Progress value={progressPercent} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Question Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start gap-3">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+              {currentIndex + 1}
+            </span>
+            <CardTitle className="text-base leading-relaxed font-medium">
+              {currentQuestion.question}
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {currentQuestion.options.map((option, idx) => {
+              const isSelected = answers[currentQuestion.id] === idx;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleSelectOption(currentQuestion.id, idx)}
+                  className={`w-full rounded-lg border-2 p-4 text-left text-sm transition-all ${
+                    isSelected
+                      ? "border-blue-600 bg-blue-50 text-blue-900"
+                      : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold ${
+                        isSelected
+                          ? "border-blue-600 bg-blue-600 text-white"
+                          : "border-gray-300 text-gray-500"
+                      }`}
+                    >
+                      {String.fromCharCode(65 + idx)}
+                    </span>
+                    <span>{option}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {currentQuestion.points && (
+            <p className="mt-4 text-xs text-gray-400">
+              {currentQuestion.points} point{currentQuestion.points !== 1 ? "s" : ""}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between gap-4">
+        <Button
+          variant="outline"
+          onClick={handlePrev}
+          disabled={currentIndex === 0}
+          className="gap-2"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Previous
+        </Button>
+
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {questions.map((q, idx) => (
+            <button
+              key={q.id}
+              onClick={() => setCurrentIndex(idx)}
+              className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${
+                idx === currentIndex
+                  ? "bg-blue-600 text-white"
+                  : answers[q.id] !== undefined
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              }`}
+            >
+              {idx + 1}
+            </button>
+          ))}
+        </div>
+
+        {currentIndex < totalQuestions - 1 ? (
+          <Button onClick={handleNext} className="gap-2">
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+          >
+            {submitting ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-4 w-4" />
+                Submit Assessment
+              </>
+            )}
