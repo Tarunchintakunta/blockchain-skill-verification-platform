@@ -40,3 +40,33 @@ export const authOptions: NextAuthOptions = {
         };
       },
     }),
+  ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = (user as unknown as { role: string }).role;
+        token.walletAddress = (user as unknown as { walletAddress?: string }).walletAddress;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as { id: string }).id = token.id as string;
+        (session.user as { role: string }).role = token.role as string;
+        (session.user as { walletAddress?: string }).walletAddress =
+          token.walletAddress as string;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/auth/signin",
+    error: "/auth/signin",
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};
