@@ -828,3 +828,85 @@ function CreateAssessmentForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">Skill ID</label>
         <Input
+          placeholder="UUID of the related skill"
+          value={formData.skillId}
+          onChange={(e) => setFormData({ ...formData, skillId: e.target.value })}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Difficulty</label>
+        <Select
+          value={formData.difficulty}
+          onValueChange={(value) =>
+            setFormData({
+              ...formData,
+              difficulty: value as "beginner" | "intermediate" | "advanced",
+            })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="beginner">Beginner</SelectItem>
+            <SelectItem value="intermediate">Intermediate</SelectItem>
+            <SelectItem value="advanced">Advanced</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">
+            Duration (minutes)
+          </label>
+          <Input
+            type="number"
+            min={5}
+            max={180}
+            value={formData.duration}
+            onChange={(e) =>
+              setFormData({ ...formData, duration: Number(e.target.value) })
+            }
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">
+            Passing Score (%)
+          </label>
+          <Input
+            type="number"
+            min={1}
+            max={100}
+            value={formData.passingScore}
+            onChange={(e) =>
+              setFormData({ ...formData, passingScore: Number(e.target.value) })
+            }
+            required
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Description{" "}
+          <span className="font-normal text-gray-400">(optional)</span>
+        </label>
+        <Input
+          placeholder="Brief description of the assessment"
+          value={formData.description}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
+        />
+      </div>
+
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Creating..." : "Create Assessment"}
+      </Button>
+    </form>
+  );
+}
