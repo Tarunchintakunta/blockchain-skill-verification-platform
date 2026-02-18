@@ -38,3 +38,43 @@ const features = [
     icon: Lock,
     title: "Privacy-Preserving",
     description:
+      "All assessment data is processed securely. Personal data is encrypted and controlled by the user with GDPR compliance.",
+  },
+  {
+    icon: Zap,
+    title: "Instant Verification",
+    description:
+      "Verify any credential in seconds through the blockchain. No more waiting 5-10 business days for traditional verification.",
+  },
+  {
+    icon: Globe,
+    title: "Decentralized Trust",
+    description:
+      "No single point of failure. Credentials exist on the blockchain independently of any organization or platform.",
+  },
+];
+
+const stats = [
+  { value: "<5s", label: "Verification Time" },
+  { value: "99.7%", label: "Tamper Resistance" },
+  { value: "85%+", label: "Matching Accuracy" },
+  { value: "1000+", label: "TPS Throughput" },
+];
+
+const roles = [
+  {
+    icon: Users,
+    title: "For Candidates",
+    points: [
+      "Build a verified skill portfolio",
+      "Take AI-powered assessments",
+      "Get matched with ideal jobs",
+      "Own your credentials forever",
+    ],
+  },
+  {
+    icon: Award,
+    title: "For Institutions",
+    points: [
+      "Issue blockchain credentials",
+      "Create skill assessments",
