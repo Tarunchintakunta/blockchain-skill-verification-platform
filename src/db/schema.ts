@@ -213,3 +213,48 @@ export const credentialsRelations = relations(credentials, ({ one }) => ({
     references: [users.id],
     relationName: "issuerCredentials",
   }),
+}));
+
+export const assessmentsRelations = relations(assessments, ({ one, many }) => ({
+  skill: one(skills, {
+    fields: [assessments.skillId],
+    references: [skills.id],
+  }),
+  creator: one(users, {
+    fields: [assessments.creatorId],
+    references: [users.id],
+  }),
+  attempts: many(assessmentAttempts),
+}));
+
+export const assessmentAttemptsRelations = relations(
+  assessmentAttempts,
+  ({ one }) => ({
+    assessment: one(assessments, {
+      fields: [assessmentAttempts.assessmentId],
+      references: [assessments.id],
+    }),
+    candidate: one(users, {
+      fields: [assessmentAttempts.candidateId],
+      references: [users.id],
+    }),
+  })
+);
+
+export const jobsRelations = relations(jobs, ({ one, many }) => ({
+  employer: one(users, {
+    fields: [jobs.employerId],
+    references: [users.id],
+  }),
+  applications: many(applications),
+}));
+
+export const applicationsRelations = relations(applications, ({ one }) => ({
+  job: one(jobs, {
+    fields: [applications.jobId],
+    references: [jobs.id],
+  }),
+  candidate: one(users, {
+    fields: [applications.candidateId],
+    references: [users.id],
+  }),
