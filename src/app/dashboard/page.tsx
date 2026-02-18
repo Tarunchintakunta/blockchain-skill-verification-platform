@@ -278,3 +278,4 @@ function InstitutionDashboard({ stats }: { stats: DashboardData }) {
       ))}
     </div>
   );
+}
