@@ -128,3 +128,43 @@ function getQuestionBank(
       ],
       advanced: [
         { id: "py-a-1", question: "What is a metaclass?", options: ["A base class", "A class of a class", "An abstract class", "A mixin"], correctAnswer: 1, explanation: "Metaclasses define how classes themselves are created.", points: 20 },
+        { id: "py-a-2", question: "What is the descriptor protocol?", options: ["Network protocol", "Object attribute access mechanism", "File I/O system", "Memory management"], correctAnswer: 1, explanation: "Descriptors define how attribute access is handled via __get__, __set__, __delete__.", points: 20 },
+        { id: "py-a-3", question: "What is the MRO in Python?", options: ["Memory Reference Object", "Method Resolution Order", "Module Resource Optimizer", "Multi-Return Operation"], correctAnswer: 1, explanation: "MRO determines the order in which base classes are searched.", points: 20 },
+        { id: "py-a-4", question: "What are slots in a Python class?", options: ["Method decorators", "Fixed attribute declarations", "Thread locks", "Memory pools"], correctAnswer: 1, explanation: "__slots__ prevents dynamic attribute creation, saving memory.", points: 20 },
+        { id: "py-a-5", question: "What is monkey patching?", options: ["Error handling", "Dynamically modifying code at runtime", "Unit testing", "Code optimization"], correctAnswer: 1, explanation: "Monkey patching modifies or extends code at runtime without altering source.", points: 20 },
+      ],
+    },
+    Solidity: {
+      beginner: [
+        { id: "sol-b-1", question: "What is a smart contract?", options: ["A legal document", "Self-executing code on blockchain", "A web API", "A database"], correctAnswer: 1, explanation: "Smart contracts are self-executing programs stored on a blockchain.", points: 10 },
+        { id: "sol-b-2", question: "What is the primary unit of Ether?", options: ["Gwei", "Wei", "Finney", "Ether"], correctAnswer: 1, explanation: "Wei is the smallest unit of Ether (1 ETH = 10^18 Wei).", points: 10 },
+        { id: "sol-b-3", question: "What visibility keyword makes a function accessible only within the contract?", options: ["public", "external", "private", "internal"], correctAnswer: 2, explanation: "private restricts access to the defining contract only.", points: 10 },
+        { id: "sol-b-4", question: "What is msg.sender?", options: ["Contract address", "Current caller address", "Block miner", "Network ID"], correctAnswer: 1, explanation: "msg.sender is the address that called the current function.", points: 10 },
+        { id: "sol-b-5", question: "What does the 'payable' modifier do?", options: ["Makes function free", "Allows function to receive Ether", "Adds logging", "Enables events"], correctAnswer: 1, explanation: "payable allows a function to receive Ether.", points: 10 },
+      ],
+      intermediate: [
+        { id: "sol-i-1", question: "What is the purpose of the ERC-721 standard?", options: ["Fungible tokens", "Non-fungible tokens", "Governance", "Staking"], correctAnswer: 1, explanation: "ERC-721 is the standard for non-fungible tokens (NFTs).", points: 15 },
+        { id: "sol-i-2", question: "What is a reentrancy attack?", options: ["DDoS attack", "Recursive call exploitation", "Phishing", "DNS hijacking"], correctAnswer: 1, explanation: "Reentrancy exploits recursive calls to drain funds before state updates.", points: 15 },
+        { id: "sol-i-3", question: "What does the 'view' modifier indicate?", options: ["Function modifies state", "Function only reads state", "Function is deprecated", "Function is payable"], correctAnswer: 1, explanation: "view functions read state but do not modify it.", points: 15 },
+        { id: "sol-i-4", question: "What is the purpose of events in Solidity?", options: ["Error handling", "Logging and external monitoring", "State mutation", "Access control"], correctAnswer: 1, explanation: "Events log data on the blockchain for external consumers.", points: 15 },
+        { id: "sol-i-5", question: "What is gas in Ethereum?", options: ["A cryptocurrency", "Computational cost unit", "A consensus mechanism", "A data type"], correctAnswer: 1, explanation: "Gas measures the computational effort required to execute operations.", points: 15 },
+      ],
+      advanced: [
+        { id: "sol-a-1", question: "What is the proxy pattern used for?", options: ["Gas optimization", "Upgradeable contracts", "Token creation", "Oracle integration"], correctAnswer: 1, explanation: "Proxy patterns enable contract upgradeability via delegatecall.", points: 20 },
+        { id: "sol-a-2", question: "What is the difference between call and delegatecall?", options: ["No difference", "delegatecall preserves caller context", "call is deprecated", "delegatecall is faster"], correctAnswer: 1, explanation: "delegatecall executes code in the context of the calling contract.", points: 20 },
+        { id: "sol-a-3", question: "What is the check-effects-interactions pattern?", options: ["A UI pattern", "Security pattern for state changes", "Testing methodology", "Gas optimization"], correctAnswer: 1, explanation: "This pattern prevents reentrancy by ordering checks, state changes, then external calls.", points: 20 },
+        { id: "sol-a-4", question: "What is EIP-1967?", options: ["Token standard", "Proxy storage slot standard", "Governance protocol", "Bridge protocol"], correctAnswer: 1, explanation: "EIP-1967 standardizes storage slots for proxy contracts.", points: 20 },
+        { id: "sol-a-5", question: "What is the diamond pattern (EIP-2535)?", options: ["Token standard", "Multi-facet proxy pattern", "NFT metadata standard", "Staking protocol"], correctAnswer: 1, explanation: "The diamond pattern allows unlimited contract functionality via facets.", points: 20 },
+      ],
+    },
+  };
+
+  const skillBank = banks[skillName] || banks["JavaScript"];
+  const difficultyBank = skillBank?.[difficulty] || skillBank?.["beginner"];
+  return difficultyBank || banks["JavaScript"]["beginner"];
+}
+
+export function analyzeAssessmentResults(
+  answers: Record<string, number>,
+  questions: {
+    id: string;
