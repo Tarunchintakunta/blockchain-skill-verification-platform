@@ -178,3 +178,38 @@ export const userSkills = pgTable("user_skills", {
   proficiencyLevel: integer("proficiency_level").notNull().default(0),
   isVerified: boolean("is_verified").default(false),
   verifiedAt: timestamp("verified_at"),
+  credentialId: uuid("credential_id").references(() => credentials.id),
+});
+
+export const blockchainTransactions = pgTable("blockchain_transactions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id),
+  txHash: varchar("tx_hash", { length: 66 }).notNull().unique(),
+  type: varchar("type", { length: 50 }).notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const usersRelations = relations(users, ({ many }) => ({
+  credentials: many(credentials, { relationName: "candidateCredentials" }),
+  issuedCredentials: many(credentials, { relationName: "issuerCredentials" }),
+  assessmentAttempts: many(assessmentAttempts),
+  jobs: many(jobs),
+  applications: many(applications),
+  userSkills: many(userSkills),
+}));
+
+export const credentialsRelations = relations(credentials, ({ one }) => ({
+  candidate: one(users, {
+    fields: [credentials.candidateId],
+    references: [users.id],
+    relationName: "candidateCredentials",
+  }),
+  issuer: one(users, {
+    fields: [credentials.issuerId],
+    references: [users.id],
+    relationName: "issuerCredentials",
+  }),
