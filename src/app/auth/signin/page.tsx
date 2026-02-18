@@ -98,3 +98,25 @@ export default function SignInPage() {
               <Button
                 type="submit"
                 className="w-full gap-2"
+                disabled={loading}
+              >
+                {loading ? "Signing in..." : "Sign In"}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center text-sm text-gray-500">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/auth/signup"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Sign up
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
