@@ -68,3 +68,33 @@ contract SkillCredential is ERC721, ERC721URIStorage, AccessControl {
         _holderCredentials[holder].push(tokenId);
         _issuerCredentials[msg.sender].push(tokenId);
 
+        emit CredentialIssued(tokenId, holder, msg.sender, credentialHash);
+        return tokenId;
+    }
+
+    /**
+     * @dev Verify a credential by its tokenId.
+     */
+    function verifyCredential(
+        uint256 tokenId
+    )
+        external
+        view
+        returns (
+            address holder,
+            address issuer,
+            string memory credentialHash,
+            uint256 issuedAt,
+            bool isValid
+        )
+    {
+        require(tokenId < _nextTokenId, "Credential does not exist");
+        Credential storage cred = _credentials[tokenId];
+        return (
+            cred.holder,
+            cred.issuer,
+            cred.credentialHash,
+            cred.issuedAt,
+            cred.isValid
+        );
+    }
