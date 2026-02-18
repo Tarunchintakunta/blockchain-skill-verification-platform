@@ -548,3 +548,153 @@ function AssessmentRunner({
                 Submit Assessment
               </>
             )}
+          </Button>
+        )}
+      </div>
+
+      {error && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
+      <div className="text-center">
+        <button
+          onClick={onCancel}
+          className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-2"
+        >
+          Cancel and exit assessment
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ResultsView({
+  assessment,
+  result,
+  onClose,
+}: {
+  assessment: Assessment;
+  result: SubmissionResult;
+  onClose: () => void;
+}) {
+  const { score, passed, analysis } = result;
+
+  return (
+    <div className="space-y-6">
+      {/* Score Card */}
+      <Card className={passed ? "border-emerald-200 bg-emerald-50" : "border-red-200 bg-red-50"}>
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center text-center">
+            {passed ? (
+              <CheckCircle2 className="h-16 w-16 text-emerald-500" />
+            ) : (
+              <XCircle className="h-16 w-16 text-red-500" />
+            )}
+            <h2 className="mt-3 text-2xl font-bold text-gray-900">
+              {passed ? "Congratulations! You Passed!" : "Assessment Not Passed"}
+            </h2>
+            <p className="mt-1 text-gray-600">{assessment.title}</p>
+
+            <div className="mt-6 flex items-end gap-1">
+              <span className="text-6xl font-bold text-gray-900">{score}</span>
+              <span className="mb-2 text-2xl font-semibold text-gray-500">%</span>
+            </div>
+            <p className="mt-1 text-sm text-gray-500">
+              Passing score: {assessment.passingScore}%
+            </p>
+
+            <div className="mt-4 w-full max-w-xs">
+              <Progress value={score} />
+            </div>
+
+            {passed && (
+              <Badge variant="success" className="mt-4 text-sm px-3 py-1">
+                <Trophy className="mr-1.5 h-3.5 w-3.5" />
+                Skill Verified
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Analysis Tabs */}
+      <Tabs defaultValue="overview">
+        <TabsList className="w-full">
+          <TabsTrigger value="overview" className="flex-1">Overview</TabsTrigger>
+          <TabsTrigger value="strengths" className="flex-1">Strengths</TabsTrigger>
+          <TabsTrigger value="improvements" className="flex-1">Improvements</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <BarChart3 className="h-5 w-5 text-blue-600" />
+                Performance Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-lg bg-gray-50 p-4 text-center">
+                  <p className="text-2xl font-bold text-gray-900">{score}%</p>
+                  <p className="mt-1 text-sm text-gray-500">Your Score</p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-4 text-center">
+                  <p className="text-2xl font-bold text-gray-900">
+                    {analysis.confidenceScore}%
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">Confidence Score</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Score achieved</span>
+                  <span className="font-medium">{score}%</span>
+                </div>
+                <Progress value={score} />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Confidence rating</span>
+                  <span className="font-medium">{analysis.confidenceScore}%</span>
+                </div>
+                <Progress value={analysis.confidenceScore} />
+              </div>
+
+              {analysis.recommendations.length > 0 && (
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                  <div className="flex items-start gap-2">
+                    <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-900">
+                        Recommendation
+                      </p>
+                      <p className="mt-1 text-sm text-blue-700">
+                        {analysis.recommendations[0]}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="strengths">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                Strength Areas
+              </CardTitle>
+              <CardDescription>
+                Topics where you demonstrated solid understanding
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {analysis.strengthAreas.length === 0 ? (
+                <p className="text-sm text-gray-500">No strength areas recorded.</p>
