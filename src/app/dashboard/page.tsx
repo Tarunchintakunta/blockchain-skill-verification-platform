@@ -198,3 +198,83 @@ function EmployerDashboard({ stats }: { stats: DashboardData }) {
       value: stats.activeJobs || 0,
       icon: Briefcase,
       color: "text-blue-600",
+      bg: "bg-blue-100",
+    },
+    {
+      title: "Total Applications",
+      value: stats.totalApplications || 0,
+      icon: Users,
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
+    },
+    {
+      title: "Total Jobs Posted",
+      value: stats.totalJobs || 0,
+      icon: BarChart3,
+      color: "text-purple-600",
+      bg: "bg-purple-100",
+    },
+  ];
+
+  return (
+    <div className="grid gap-6 md:grid-cols-3">
+      {cards.map((card) => (
+        <Card key={card.title}>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">{card.title}</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">
+                  {card.value}
+                </p>
+              </div>
+              <div className={`rounded-lg ${card.bg} p-3`}>
+                <card.icon className={`h-6 w-6 ${card.color}`} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function InstitutionDashboard({ stats }: { stats: DashboardData }) {
+  const cards = [
+    {
+      title: "Issued Credentials",
+      value: stats.issuedCredentials || 0,
+      icon: Award,
+      color: "text-blue-600",
+      bg: "bg-blue-100",
+    },
+    {
+      title: "Verified on Chain",
+      value: stats.verifiedCredentials || 0,
+      icon: Shield,
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
+    },
+  ];
+
+  return (
+    <div className="grid gap-6 md:grid-cols-2">
+      {cards.map((card) => (
+        <Card key={card.title}>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">{card.title}</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">
+                  {card.value}
+                </p>
+              </div>
+              <div className={`rounded-lg ${card.bg} p-3`}>
+                <card.icon className={`h-6 w-6 ${card.color}`} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
