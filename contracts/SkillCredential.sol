@@ -128,3 +128,28 @@ contract SkillCredential is ERC721, ERC721URIStorage, AccessControl {
      * @dev Get all credential token IDs issued by an address.
      */
     function getCredentialsByIssuer(
+        address issuer
+    ) external view returns (uint256[] memory) {
+        return _issuerCredentials[issuer];
+    }
+
+    /**
+     * @dev Grant issuer role to an institution address.
+     */
+    function addIssuer(address account) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _grantRole(ISSUER_ROLE, account);
+    }
+
+    /**
+     * @dev Remove issuer role from an address.
+     */
+    function removeIssuer(address account) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _revokeRole(ISSUER_ROLE, account);
+    }
+
+    /**
+     * @dev Get total number of credentials issued.
+     */
+    function totalCredentials() external view returns (uint256) {
+        return _nextTokenId;
+    }
