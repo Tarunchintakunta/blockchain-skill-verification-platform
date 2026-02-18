@@ -118,3 +118,83 @@ function CandidateDashboard({ stats }: { stats: DashboardData }) {
       color: "text-cyan-600",
       bg: "bg-cyan-100",
     },
+  ];
+
+  const verificationRate =
+    stats.totalCredentials > 0
+      ? Math.round(
+          (stats.verifiedCredentials / stats.totalCredentials) * 100
+        )
+      : 0;
+
+  return (
+    <div className="space-y-8">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {cards.map((card) => (
+          <Card key={card.title}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">{card.title}</p>
+                  <p className="mt-1 text-3xl font-bold text-gray-900">
+                    {card.value}
+                  </p>
+                </div>
+                <div className={`rounded-lg ${card.bg} p-3`}>
+                  <card.icon className={`h-6 w-6 ${card.color}`} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Verification Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Credentials Verified</span>
+                <span className="font-medium">{verificationRate}%</span>
+              </div>
+              <Progress value={verificationRate} />
+              <p className="text-sm text-gray-500">
+                {stats.verifiedCredentials || 0} of{" "}
+                {stats.totalCredentials || 0} credentials verified on blockchain
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Assessment Performance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Average Score</span>
+                <span className="font-medium">{stats.averageScore || 0}%</span>
+              </div>
+              <Progress value={stats.averageScore || 0} />
+              <p className="text-sm text-gray-500">
+                Based on {stats.assessmentsTaken || 0} completed assessments
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function EmployerDashboard({ stats }: { stats: DashboardData }) {
+  const cards = [
+    {
+      title: "Active Jobs",
+      value: stats.activeJobs || 0,
+      icon: Briefcase,
+      color: "text-blue-600",
