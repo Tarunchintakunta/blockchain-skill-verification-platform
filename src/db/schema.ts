@@ -28,3 +28,23 @@ export const credentialStatusEnum = pgEnum("credential_status", [
 
 export const assessmentStatusEnum = pgEnum("assessment_status", [
   "draft",
+  "active",
+  "completed",
+  "expired",
+]);
+
+export const jobStatusEnum = pgEnum("job_status", [
+  "open",
+  "closed",
+  "filled",
+  "draft",
+]);
+
+export const applicationStatusEnum = pgEnum("application_status", [
+  "pending",
+  "reviewed",
+  "shortlisted",
+  "rejected",
+  "accepted",
+]);
+
