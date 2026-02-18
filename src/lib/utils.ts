@@ -28,3 +28,23 @@ export function truncateAddress(address: string): string {
 
 export function calculateMatchScore(
   candidateSkills: { skillId: string; level: number; verified: boolean }[],
+  requiredSkills: { skillId: string; minLevel: number }[],
+  preferredSkills: { skillId: string; minLevel: number }[]
+): number {
+  if (requiredSkills.length === 0) return 0;
+
+  let totalScore = 0;
+  let maxScore = 0;
+
+  for (const req of requiredSkills) {
+    maxScore += 100;
+    const candidate = candidateSkills.find((s) => s.skillId === req.skillId);
+    if (candidate) {
+      const levelMatch = Math.min(candidate.level / req.minLevel, 1) * 80;
+      const verifiedBonus = candidate.verified ? 20 : 0;
+      totalScore += levelMatch + verifiedBonus;
+    }
+  }
+
+  for (const pref of preferredSkills) {
+    maxScore += 50;
