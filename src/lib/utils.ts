@@ -168,3 +168,56 @@ export function analyzeAssessmentResults(
   answers: Record<string, number>,
   questions: {
     id: string;
+    correctAnswer: number;
+    points: number;
+    question: string;
+  }[]
+): {
+  score: number;
+  passed: boolean;
+  analysis: {
+    strengthAreas: string[];
+    weaknessAreas: string[];
+    recommendations: string[];
+    confidenceScore: number;
+    detailedBreakdown: Record<string, number>;
+  };
+} {
+  let totalPoints = 0;
+  let earnedPoints = 0;
+  const correctQuestions: string[] = [];
+  const incorrectQuestions: string[] = [];
+
+  for (const q of questions) {
+    totalPoints += q.points;
+    if (answers[q.id] === q.correctAnswer) {
+      earnedPoints += q.points;
+      correctQuestions.push(q.question);
+    } else {
+      incorrectQuestions.push(q.question);
+    }
+  }
+
+  const score = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
+
+  return {
+    score,
+    passed: score >= 70,
+    analysis: {
+      strengthAreas: correctQuestions.slice(0, 3),
+      weaknessAreas: incorrectQuestions.slice(0, 3),
+      recommendations:
+        score >= 90
+          ? ["Excellent performance. Consider advanced-level assessments."]
+          : score >= 70
+          ? ["Good foundation. Focus on weak areas to improve further."]
+          : ["Review fundamentals. Consider retaking after additional study."],
+      confidenceScore: Math.min(score + 5, 100),
+      detailedBreakdown: {
+        correctAnswers: correctQuestions.length,
+        totalQuestions: questions.length,
+        scorePercentage: score,
+      },
+    },
+  };
+}
