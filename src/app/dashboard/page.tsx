@@ -48,3 +48,73 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  const user = session?.user as { name: string; email: string; role: string };
+  const role = user?.role || "candidate";
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar user={user} />
+
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Welcome back, {user?.name}
+          </h1>
+          <p className="mt-1 text-gray-500 capitalize">
+            {role} Dashboard
+          </p>
+        </div>
+
+        {role === "candidate" && <CandidateDashboard stats={stats} />}
+        {role === "employer" && <EmployerDashboard stats={stats} />}
+        {role === "institution" && <InstitutionDashboard stats={stats} />}
+      </main>
+    </div>
+  );
+}
+
+function CandidateDashboard({ stats }: { stats: DashboardData }) {
+  const cards = [
+    {
+      title: "Total Credentials",
+      value: stats.totalCredentials || 0,
+      icon: Award,
+      color: "text-blue-600",
+      bg: "bg-blue-100",
+    },
+    {
+      title: "Verified Credentials",
+      value: stats.verifiedCredentials || 0,
+      icon: Shield,
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
+    },
+    {
+      title: "Assessments Taken",
+      value: stats.assessmentsTaken || 0,
+      icon: FileCheck,
+      color: "text-purple-600",
+      bg: "bg-purple-100",
+    },
+    {
+      title: "Average Score",
+      value: `${stats.averageScore || 0}%`,
+      icon: TrendingUp,
+      color: "text-amber-600",
+      bg: "bg-amber-100",
+    },
+    {
+      title: "Job Applications",
+      value: stats.jobMatches || 0,
+      icon: Briefcase,
+      color: "text-indigo-600",
+      bg: "bg-indigo-100",
+    },
+    {
+      title: "Blockchain Verifications",
+      value: stats.blockchainVerifications || 0,
+      icon: LinkIcon,
+      color: "text-cyan-600",
+      bg: "bg-cyan-100",
+    },
