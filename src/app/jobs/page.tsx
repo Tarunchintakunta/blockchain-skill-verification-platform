@@ -648,3 +648,153 @@ function CandidateView({
                         <span
                           className={`rounded-full px-2.5 py-0.5 text-xs font-medium flex items-center gap-1 ${scoreColor}`}
                         >
+                          <TrendingUp className="h-3 w-3" />
+                          {score}% match
+                        </span>
+                        <span className="text-xs text-gray-500 capitalize">
+                          {match.match.recommendation}
+                        </span>
+                      </div>
+                    }
+                  />
+                );
+              })}
+          </div>
+        )}
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+function ApplyButton({
+  job,
+  onApplied,
+}: {
+  job: Job;
+  onApplied: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="w-full">
+          Apply Now
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Apply for {job.title}</DialogTitle>
+          <DialogDescription>
+            at {job.company} &middot; {job.location}
+          </DialogDescription>
+        </DialogHeader>
+        <ApplicationForm
+          job={job}
+          onSuccess={() => {
+            setOpen(false);
+            onApplied();
+          }}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ApplicationForm({
+  job,
+  onSuccess,
+}: {
+  job: Job;
+  onSuccess: () => void;
+}) {
+  const [coverLetter, setCoverLetter] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<{
+    overallScore: number;
+    recommendation: string;
+    skillBreakdown: Record<string, unknown>;
+  } | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/jobs/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobId: job.id, coverLetter }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Failed to submit application");
+        return;
+      }
+
+      if (data.success && data.data?.matchResult) {
+        setResult(data.data.matchResult);
+      } else {
+        onSuccess();
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (result) {
+    const score = result.overallScore;
+    const scoreColor =
+      score >= 80
+        ? "text-emerald-600"
+        : score >= 60
+        ? "text-blue-600"
+        : "text-amber-600";
+    const scoreBg =
+      score >= 80
+        ? "bg-emerald-50"
+        : score >= 60
+        ? "bg-blue-50"
+        : "bg-amber-50";
+
+    return (
+      <div className={`rounded-lg p-6 ${scoreBg} text-center space-y-3`}>
+        <TrendingUp className={`mx-auto h-10 w-10 ${scoreColor}`} />
+        <h3 className="text-lg font-semibold text-gray-900">
+          Application Submitted!
+        </h3>
+        <p className={`text-4xl font-bold ${scoreColor}`}>{score}%</p>
+        <p className="text-sm text-gray-600">Match Score</p>
+        <p className="text-sm text-gray-700 capitalize font-medium">
+          {result.recommendation}
+        </p>
+        <Button className="w-full" onClick={onSuccess}>
+          Done
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
+      <div className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600 space-y-1">
+        <div className="flex items-center gap-1.5">
+          <MapPin className="h-3.5 w-3.5 text-gray-400" />
+          {job.location}
+        </div>
+        {(job.salaryMin || job.salaryMax) && (
+          <div className="flex items-center gap-1.5">
+            <DollarSign className="h-3.5 w-3.5 text-gray-400" />
+            {job.salaryMin && job.salaryMax
