@@ -298,3 +298,153 @@ export default function VerifyPage() {
                       <p className="text-xs font-medium text-gray-500">
                         Token ID
                       </p>
+                      <p className="mt-0.5 font-mono text-sm font-semibold text-gray-900 break-all">
+                        #{result.tokenId}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Validity Status */}
+                  <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-4">
+                    <div
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                        result.data.isValid ? "bg-emerald-100" : "bg-red-100"
+                      }`}
+                    >
+                      {result.data.isValid ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-600" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-500">
+                        Validity Status
+                      </p>
+                      <p
+                        className={`mt-0.5 text-sm font-semibold ${
+                          result.data.isValid
+                            ? "text-emerald-700"
+                            : "text-red-700"
+                        }`}
+                      >
+                        {result.data.isValid ? "Active & Valid" : "Revoked"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Holder Address */}
+                  {result.data.holder && (
+                    <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-4">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100">
+                        <User className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-gray-500">
+                          Holder Address
+                        </p>
+                        <div className="mt-0.5 flex items-center gap-2">
+                          <p className="font-mono text-sm text-gray-900">
+                            {truncateAddress(result.data.holder)}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleCopy(result.data.holder!, "holder")
+                            }
+                            className="shrink-0 rounded p-0.5 text-gray-400 hover:text-gray-700 transition-colors"
+                            title="Copy full address"
+                          >
+                            {copyState["holder"] ? (
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Issuer Address */}
+                  {result.data.issuer && (
+                    <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-4">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-100">
+                        <Building2 className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-gray-500">
+                          Issuer Address
+                        </p>
+                        <div className="mt-0.5 flex items-center gap-2">
+                          <p className="font-mono text-sm text-gray-900">
+                            {truncateAddress(result.data.issuer)}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleCopy(result.data.issuer!, "issuer")
+                            }
+                            className="shrink-0 rounded p-0.5 text-gray-400 hover:text-gray-700 transition-colors"
+                            title="Copy full address"
+                          >
+                            {copyState["issuer"] ? (
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Credential Hash */}
+                  {result.data.credentialHash && (
+                    <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-4">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100">
+                        <LinkIcon className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-gray-500">
+                          Credential Hash
+                        </p>
+                        <p className="mt-0.5 font-mono text-sm text-gray-900 break-all">
+                          {truncateAddress(result.data.credentialHash)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Issued Date */}
+                  {result.data.issuedAt !== undefined && (
+                    <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-4">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-100">
+                        <Clock className="h-4 w-4 text-cyan-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-500">
+                          Issued Date
+                        </p>
+                        <p className="mt-0.5 text-sm font-semibold text-gray-900">
+                          {result.data.issuedAt
+                            ? formatDate(
+                                new Date(Number(result.data.issuedAt) * 1000)
+                              )
+                            : "Unknown"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Polygon Explorer Link */}
+                <div className="mt-4 flex items-center justify-end">
+                  <a
+                    href={`https://polygonscan.com/token/${process.env.NEXT_PUBLIC_CONTRACT_ADDRESS}?a=${result.tokenId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    View on PolygonScan
+                    <ExternalLink className="h-3.5 w-3.5" />
