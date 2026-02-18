@@ -58,3 +58,43 @@ export async function issueCredentialOnChain(
 
 export async function verifyCredentialOnChain(tokenId: string): Promise<{
   holder: string;
+  issuer: string;
+  credentialHash: string;
+  issuedAt: number;
+  isValid: boolean;
+}> {
+  const contract = getContract();
+  const result = await contract.verifyCredential(tokenId);
+
+  return {
+    holder: result[0],
+    issuer: result[1],
+    credentialHash: result[2],
+    issuedAt: Number(result[3]),
+    isValid: result[4],
+  };
+}
+
+export async function revokeCredentialOnChain(tokenId: string): Promise<string> {
+  const signer = getSigner();
+  const contract = getContract(signer);
+
+  const tx = await contract.revokeCredential(tokenId);
+  const receipt = await tx.wait();
+  return receipt.hash;
+}
+
+export async function getHolderCredentials(
+  holderAddress: string
+): Promise<string[]> {
+  const contract = getContract();
+  const tokenIds = await contract.getCredentialsByHolder(holderAddress);
+  return tokenIds.map((id: bigint) => id.toString());
+}
+
+export function generateCredentialHash(data: {
+  candidateId: string;
+  issuerId: string;
+  title: string;
+  skills: string[];
+  issuedAt: string;
