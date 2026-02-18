@@ -138,3 +138,43 @@ export const jobs = pgTable("jobs", {
     .references(() => users.id),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description").notNull(),
+  company: varchar("company", { length: 255 }).notNull(),
+  location: varchar("location", { length: 255 }),
+  type: varchar("type", { length: 50 }).notNull(),
+  salaryMin: integer("salary_min"),
+  salaryMax: integer("salary_max"),
+  requiredSkillIds: jsonb("required_skill_ids").$type<string[]>().default([]),
+  preferredSkillIds: jsonb("preferred_skill_ids")
+    .$type<string[]>()
+    .default([]),
+  status: jobStatusEnum("status").notNull().default("open"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const applications = pgTable("applications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  jobId: uuid("job_id")
+    .notNull()
+    .references(() => jobs.id),
+  candidateId: uuid("candidate_id")
+    .notNull()
+    .references(() => users.id),
+  status: applicationStatusEnum("status").notNull().default("pending"),
+  matchScore: real("match_score"),
+  coverLetter: text("cover_letter"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const userSkills = pgTable("user_skills", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id),
+  skillId: uuid("skill_id")
+    .notNull()
+    .references(() => skills.id),
+  proficiencyLevel: integer("proficiency_level").notNull().default(0),
+  isVerified: boolean("is_verified").default(false),
+  verifiedAt: timestamp("verified_at"),
