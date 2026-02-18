@@ -98,3 +98,50 @@ export function Navbar({ user }: NavbarProps) {
                 </Link>
               </div>
             )}
+
+            <button
+              className="md:hidden"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {mobileOpen && user && (
+        <div className="border-t border-gray-200 bg-white md:hidden">
+          <div className="space-y-1 px-4 py-3">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium",
+                  pathname === item.href
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.name}
+              </Link>
+            ))}
+            <Link
+              href="/api/auth/signout"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Link>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
+}
