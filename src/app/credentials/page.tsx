@@ -138,3 +138,93 @@ export default function CredentialsPage() {
           </div>
         ) : credentials.length === 0 ? (
           <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Award className="h-12 w-12 text-gray-300" />
+              <h3 className="mt-4 text-lg font-medium text-gray-900">
+                No credentials yet
+              </h3>
+              <p className="mt-1 text-gray-500">
+                {isInstitution
+                  ? "Start by issuing your first credential"
+                  : "Complete assessments to earn credentials"}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {credentials.map((credential) => {
+              const config = statusConfig[credential.status] || statusConfig.pending;
+              const StatusIcon = config.icon;
+
+              return (
+                <Card key={credential.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
+                          <Award className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-base">
+                            {credential.title}
+                          </CardTitle>
+                          <CardDescription>{credential.type}</CardDescription>
+                        </div>
+                      </div>
+                      <Badge variant={config.variant}>
+                        <StatusIcon className="mr-1 h-3 w-3" />
+                        {config.label}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {credential.description && (
+                      <p className="mb-4 text-sm text-gray-500 line-clamp-2">
+                        {credential.description}
+                      </p>
+                    )}
+                    <div className="space-y-2 text-sm">
+                      {credential.issuedAt && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Issued</span>
+                          <span className="text-gray-900">
+                            {formatDate(credential.issuedAt)}
+                          </span>
+                        </div>
+                      )}
+                      {credential.blockchainTxHash && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500">TX Hash</span>
+                          <span className="flex items-center gap-1 text-blue-600">
+                            {truncateAddress(credential.blockchainTxHash)}
+                            <ExternalLink className="h-3 w-3" />
+                          </span>
+                        </div>
+                      )}
+                      {credential.tokenId && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Token ID</span>
+                          <span className="text-gray-900">
+                            #{credential.tokenId}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+function IssueCredentialForm({ onSuccess }: { onSuccess: () => void }) {
+  const [formData, setFormData] = useState({
+    candidateId: "",
+    title: "",
+    description: "",
+    type: "certification",
+  });
