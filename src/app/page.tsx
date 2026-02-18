@@ -238,3 +238,26 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold sm:text-4xl">
               Ready to Build Your Verified Profile?
             </h2>
+            <p className="mt-4 text-lg text-blue-100 max-w-2xl mx-auto">
+              Join the future of credential verification. Issue, verify, and
+              match with blockchain-backed trust.
+            </p>
+            <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+              <Link href="/auth/signup">
+                <Button
+                  size="lg"
+                  className="bg-white text-blue-600 hover:bg-blue-50 gap-2 text-base px-8"
+                >
+                  Create Free Account
+                  <ArrowRight className="h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
