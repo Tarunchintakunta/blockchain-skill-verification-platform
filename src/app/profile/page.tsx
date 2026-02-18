@@ -428,3 +428,93 @@ function EditProfileForm({
                   setFormData({
                     name: profile.name,
                     bio: profile.bio ?? "",
+                  });
+                }
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ---------- Wallet Section ---------- */
+
+function WalletSection({
+  walletAddress,
+  onSuccess,
+}: {
+  walletAddress: string | null;
+  onSuccess: () => void;
+}) {
+  const [newAddress, setNewAddress] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  function validateAddress(address: string): boolean {
+    return address.startsWith("0x") && address.length === 42;
+  }
+
+  async function handleSave() {
+    if (!validateAddress(newAddress)) {
+      setError(
+        "Invalid wallet address. Must start with 0x and be 42 characters long."
+      );
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    const res = await fetch("/api/users/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ walletAddress: newAddress }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setError(data.error || "Failed to update wallet address");
+      setSaving(false);
+      return;
+    }
+
+    setSuccess("Wallet address updated");
+    setNewAddress("");
+    setSaving(false);
+    onSuccess();
+  }
+
+  function handleCopy() {
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Wallet className="h-5 w-5 text-blue-600" />
+          Wallet Address
+        </CardTitle>
+        <CardDescription>
+          Link your Web3 wallet to receive blockchain credentials
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {error && (
+          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
+        {success && (
