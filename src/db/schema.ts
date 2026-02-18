@@ -78,3 +78,33 @@ export const credentials = pgTable("credentials", {
     .references(() => users.id),
   issuerId: uuid("issuer_id")
     .notNull()
+    .references(() => users.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  type: varchar("type", { length: 100 }).notNull(),
+  status: credentialStatusEnum("status").notNull().default("pending"),
+  skillIds: jsonb("skill_ids").$type<string[]>().default([]),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+  blockchainTxHash: varchar("blockchain_tx_hash", { length: 66 }),
+  tokenId: varchar("token_id", { length: 78 }),
+  ipfsHash: varchar("ipfs_hash", { length: 100 }),
+  issuedAt: timestamp("issued_at"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const assessments = pgTable("assessments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  skillId: uuid("skill_id")
+    .notNull()
+    .references(() => skills.id),
+  creatorId: uuid("creator_id")
+    .notNull()
+    .references(() => users.id),
+  status: assessmentStatusEnum("status").notNull().default("draft"),
+  difficulty: varchar("difficulty", { length: 20 }).notNull(),
+  duration: integer("duration").notNull(),
+  passingScore: integer("passing_score").notNull().default(70),
