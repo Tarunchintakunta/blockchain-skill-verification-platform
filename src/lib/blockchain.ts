@@ -98,3 +98,10 @@ export function generateCredentialHash(data: {
   title: string;
   skills: string[];
   issuedAt: string;
+}): string {
+  const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["string", "string", "string", "string[]", "string"],
+    [data.candidateId, data.issuerId, data.title, data.skills, data.issuedAt]
+  );
+  return ethers.keccak256(encoded);
+}
