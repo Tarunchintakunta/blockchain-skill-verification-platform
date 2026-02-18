@@ -98,3 +98,33 @@ contract SkillCredential is ERC721, ERC721URIStorage, AccessControl {
             cred.isValid
         );
     }
+
+    /**
+     * @dev Revoke a credential. Only the original issuer can revoke.
+     */
+    function revokeCredential(uint256 tokenId) external {
+        require(tokenId < _nextTokenId, "Credential does not exist");
+        Credential storage cred = _credentials[tokenId];
+        require(
+            cred.issuer == msg.sender || hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
+            "Not authorized to revoke"
+        );
+        require(cred.isValid, "Already revoked");
+
+        cred.isValid = false;
+        emit CredentialRevoked(tokenId);
+    }
+
+    /**
+     * @dev Get all credential token IDs held by an address.
+     */
+    function getCredentialsByHolder(
+        address holder
+    ) external view returns (uint256[] memory) {
+        return _holderCredentials[holder];
+    }
+
+    /**
+     * @dev Get all credential token IDs issued by an address.
+     */
+    function getCredentialsByIssuer(
