@@ -318,3 +318,113 @@ function EditProfileForm({
     setSuccess("");
 
     const res = await fetch("/api/users/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: formData.name, bio: formData.bio }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setError(data.error || "Failed to update profile");
+      setSaving(false);
+      return;
+    }
+
+    setSuccess("Profile updated successfully");
+    setEditing(false);
+    setSaving(false);
+    onSuccess();
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Profile Information</CardTitle>
+            <CardDescription>Update your display name and bio</CardDescription>
+          </div>
+          {!editing && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                setEditing(true);
+                setSuccess("");
+                setError("");
+              }}
+            >
+              <Edit2 className="h-4 w-4" />
+              Edit
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {error && (
+          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-600">
+            {success}
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Full Name</label>
+          {editing ? (
+            <Input
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              placeholder="Your full name"
+            />
+          ) : (
+            <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900">
+              {profile?.name || "—"}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Bio</label>
+          {editing ? (
+            <Textarea
+              value={formData.bio}
+              onChange={(e) =>
+                setFormData({ ...formData, bio: e.target.value })
+              }
+              placeholder="Tell us a bit about yourself"
+              rows={3}
+            />
+          ) : (
+            <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 min-h-[72px]">
+              {profile?.bio || "No bio added yet."}
+            </p>
+          )}
+        </div>
+
+        {editing && (
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="gap-2"
+            >
+              <Save className="h-4 w-4" />
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditing(false);
+                setError("");
+                if (profile) {
+                  setFormData({
+                    name: profile.name,
+                    bio: profile.bio ?? "",
