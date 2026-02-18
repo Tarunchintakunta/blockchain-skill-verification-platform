@@ -258,3 +258,36 @@ export const applicationsRelations = relations(applications, ({ one }) => ({
     fields: [applications.candidateId],
     references: [users.id],
   }),
+}));
+
+export const userSkillsRelations = relations(userSkills, ({ one }) => ({
+  user: one(users, {
+    fields: [userSkills.userId],
+    references: [users.id],
+  }),
+  skill: one(skills, {
+    fields: [userSkills.skillId],
+    references: [skills.id],
+  }),
+  credential: one(credentials, {
+    fields: [userSkills.credentialId],
+    references: [credentials.id],
+  }),
+}));
+
+export type AssessmentQuestion = {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+  points: number;
+};
+
+export type AIAnalysis = {
+  strengthAreas: string[];
+  weaknessAreas: string[];
+  recommendations: string[];
+  confidenceScore: number;
+  detailedBreakdown: Record<string, number>;
+};
