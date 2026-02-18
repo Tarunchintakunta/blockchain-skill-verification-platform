@@ -948,3 +948,357 @@ function EmployerView({
   setFilterType: (v: string) => void;
   setSelectedJob: (job: Job | null) => void;
   setDetailOpen: (open: boolean) => void;
+}) {
+  const [applications, setApplications] = useState<
+    {
+      id: string;
+      jobId: string;
+      jobTitle: string;
+      candidateName: string;
+      candidateEmail: string;
+      status: string;
+      matchScore: number;
+      createdAt: string;
+    }[]
+  >([]);
+  const [appsLoading, setAppsLoading] = useState(false);
+
+  async function fetchApplications() {
+    setAppsLoading(true);
+    try {
+      const res = await fetch("/api/jobs/applications");
+      const data = await res.json();
+      if (data.success) setApplications(data.data || []);
+    } catch {
+      // fail silently
+    } finally {
+      setAppsLoading(false);
+    }
+  }
+
+  function handleTabChange(value: string) {
+    if (value === "applications") fetchApplications();
+  }
+
+  return (
+    <Tabs defaultValue="postings" onValueChange={handleTabChange}>
+      <TabsList className="mb-6">
+        <TabsTrigger value="postings">My Postings</TabsTrigger>
+        <TabsTrigger value="applications">Applications</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="postings">
+        <SearchFilterBar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          filterType={filterType}
+          setFilterType={setFilterType}
+        />
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+          </div>
+        ) : jobs.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Briefcase className="h-12 w-12 text-gray-300" />
+              <h3 className="mt-4 text-lg font-medium text-gray-900">
+                No jobs posted yet
+              </h3>
+              <p className="mt-1 text-gray-500">
+                Click &quot;Post Job&quot; to create your first listing
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {jobs.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                onClick={() => {
+                  setSelectedJob(job);
+                  setDetailOpen(true);
+                }}
+                actionSlot={
+                  job._count?.applications !== undefined ? (
+                    <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                      <Users className="h-3.5 w-3.5" />
+                      {job._count.applications} application
+                      {job._count.applications !== 1 ? "s" : ""}
+                    </div>
+                  ) : undefined
+                }
+              />
+            ))}
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="applications">
+        {appsLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+          </div>
+        ) : applications.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Users className="h-12 w-12 text-gray-300" />
+              <h3 className="mt-4 text-lg font-medium text-gray-900">
+                No applications yet
+              </h3>
+              <p className="mt-1 text-gray-500">
+                Applications will appear here once candidates apply
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {applications.map((app) => {
+              const statusConf =
+                applicationStatusConfig[app.status] ||
+                applicationStatusConfig.pending;
+              const score = app.matchScore;
+              const scoreColor =
+                score >= 80
+                  ? "bg-emerald-100 text-emerald-800"
+                  : score >= 60
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-amber-100 text-amber-800";
+              return (
+                <Card key={app.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100">
+                          <Users className="h-5 w-5 text-gray-500" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-900">
+                            {app.candidateName || "Candidate"}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {app.candidateEmail}
+                          </p>
+                          <p className="text-sm text-gray-400 mt-0.5">
+                            {app.jobTitle}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {score !== undefined && score > 0 && (
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-xs font-medium flex items-center gap-1 ${scoreColor}`}
+                          >
+                            <TrendingUp className="h-3 w-3" />
+                            {score}%
+                          </span>
+                        )}
+                        <Badge variant={statusConf.variant}>
+                          {statusConf.label}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center gap-1.5 text-sm text-gray-400">
+                      <Clock className="h-3.5 w-3.5" />
+                      Applied {formatDate(app.createdAt)}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+function PostJobForm({ onSuccess }: { onSuccess: () => void }) {
+  const [formData, setFormData] = useState({
+    title: "",
+    company: "",
+    location: "",
+    description: "",
+    type: "full-time",
+    salaryMin: "",
+    salaryMax: "",
+    requiredSkillIds: "",
+    preferredSkillIds: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const payload = {
+      title: formData.title,
+      company: formData.company,
+      location: formData.location,
+      description: formData.description,
+      type: formData.type,
+      salaryMin: formData.salaryMin ? Number(formData.salaryMin) : undefined,
+      salaryMax: formData.salaryMax ? Number(formData.salaryMax) : undefined,
+      requiredSkillIds: formData.requiredSkillIds
+        ? formData.requiredSkillIds.split(",").map((s) => s.trim()).filter(Boolean)
+        : [],
+      preferredSkillIds: formData.preferredSkillIds
+        ? formData.preferredSkillIds.split(",").map((s) => s.trim()).filter(Boolean)
+        : [],
+    };
+
+    try {
+      const res = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Failed to post job");
+        return;
+      }
+
+      onSuccess();
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+      {error && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Job Title</label>
+          <Input
+            placeholder="e.g., Senior Blockchain Developer"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Company</label>
+          <Input
+            placeholder="e.g., Acme Corp"
+            value={formData.company}
+            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Location</label>
+          <Input
+            placeholder="e.g., San Francisco, CA"
+            value={formData.location}
+            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Job Type</label>
+          <Select
+            value={formData.type}
+            onValueChange={(value) => setFormData({ ...formData, type: value })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="full-time">Full-Time</SelectItem>
+              <SelectItem value="part-time">Part-Time</SelectItem>
+              <SelectItem value="contract">Contract</SelectItem>
+              <SelectItem value="remote">Remote</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">
+            Min Salary (USD)
+          </label>
+          <Input
+            type="number"
+            placeholder="e.g., 80000"
+            value={formData.salaryMin}
+            onChange={(e) => setFormData({ ...formData, salaryMin: e.target.value })}
+            min={0}
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">
+            Max Salary (USD)
+          </label>
+          <Input
+            type="number"
+            placeholder="e.g., 120000"
+            value={formData.salaryMax}
+            onChange={(e) => setFormData({ ...formData, salaryMax: e.target.value })}
+            min={0}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Description</label>
+        <Textarea
+          placeholder="Describe the role, responsibilities, and requirements..."
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          rows={4}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Required Skill IDs
+          <span className="ml-1 text-xs text-gray-400">(comma-separated UUIDs)</span>
+        </label>
+        <Input
+          placeholder="uuid1, uuid2, uuid3"
+          value={formData.requiredSkillIds}
+          onChange={(e) =>
+            setFormData({ ...formData, requiredSkillIds: e.target.value })
+          }
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Preferred Skill IDs
+          <span className="ml-1 text-xs text-gray-400">(comma-separated UUIDs)</span>
+        </label>
+        <Input
+          placeholder="uuid1, uuid2, uuid3"
+          value={formData.preferredSkillIds}
+          onChange={(e) =>
+            setFormData({ ...formData, preferredSkillIds: e.target.value })
+          }
+        />
+      </div>
+
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Posting..." : "Post Job"}
+      </Button>
+    </form>
+  );
+}
