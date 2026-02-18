@@ -228,3 +228,101 @@ function IssueCredentialForm({ onSuccess }: { onSuccess: () => void }) {
     description: "",
     type: "certification",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const res = await fetch("/api/credentials", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...formData, skillIds: [] }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error || "Failed to issue credential");
+      setLoading(false);
+      return;
+    }
+
+    onSuccess();
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Candidate ID
+        </label>
+        <Input
+          placeholder="Enter candidate UUID"
+          value={formData.candidateId}
+          onChange={(e) =>
+            setFormData({ ...formData, candidateId: e.target.value })
+          }
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Title</label>
+        <Input
+          placeholder="e.g., Advanced JavaScript Certification"
+          value={formData.title}
+          onChange={(e) =>
+            setFormData({ ...formData, title: e.target.value })
+          }
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Type</label>
+        <Select
+          value={formData.type}
+          onValueChange={(value) =>
+            setFormData({ ...formData, type: value })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="certification">Certification</SelectItem>
+            <SelectItem value="degree">Degree</SelectItem>
+            <SelectItem value="badge">Badge</SelectItem>
+            <SelectItem value="diploma">Diploma</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          Description
+        </label>
+        <Textarea
+          placeholder="Describe the credential"
+          value={formData.description}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
+        />
+      </div>
+
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Issuing..." : "Issue Credential"}
+      </Button>
+    </form>
+  );
+}
