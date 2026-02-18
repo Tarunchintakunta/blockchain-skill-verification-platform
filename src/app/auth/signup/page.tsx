@@ -128,3 +128,91 @@ export default function SignUpPage() {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <Input
+                    type="password"
+                    placeholder="Minimum 8 characters"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    className="pl-10"
+                    required
+                    minLength={8}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  I am a
+                </label>
+                <Select
+                  value={formData.role}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, role: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="candidate">
+                      Candidate - Looking for opportunities
+                    </SelectItem>
+                    <SelectItem value="employer">
+                      Employer - Hiring talent
+                    </SelectItem>
+                    <SelectItem value="institution">
+                      Institution - Issuing credentials
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {(formData.role === "employer" ||
+                formData.role === "institution") && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Organization Name
+                  </label>
+                  <div className="relative">
+                    <Building className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                      placeholder="Your organization"
+                      value={formData.organizationName}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          organizationName: e.target.value,
+                        })
+                      }
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full gap-2"
+                disabled={loading}
+              >
+                {loading ? "Creating account..." : "Create Account"}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center text-sm text-gray-500">
+              Already have an account?{" "}
+              <Link
+                href="/auth/signin"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Sign in
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
