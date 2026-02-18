@@ -48,3 +48,53 @@ export function Navbar({ user }: NavbarProps) {
               <span className="text-xl font-bold text-gray-900">
                 SkillChain
               </span>
+            </Link>
+
+            {user && (
+              <div className="hidden md:flex md:items-center md:gap-1">
+                {navigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      pathname === item.href
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            {user ? (
+              <div className="hidden md:flex md:items-center md:gap-4">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-gray-500 capitalize">
+                    {user.role}
+                  </p>
+                </div>
+                <Link href="/api/auth/signout">
+                  <Button variant="ghost" size="icon">
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link href="/auth/signin">
+                  <Button variant="ghost">Sign In</Button>
+                </Link>
+                <Link href="/auth/signup">
+                  <Button>Get Started</Button>
+                </Link>
+              </div>
+            )}
