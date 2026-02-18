@@ -518,3 +518,561 @@ function WalletSection({
           </div>
         )}
         {success && (
+          <div className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-600">
+            {success}
+          </div>
+        )}
+
+        {walletAddress ? (
+          <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="font-mono text-sm text-gray-900">
+                {truncateAddress(walletAddress)}
+              </span>
+              <span className="text-xs text-gray-400">(Connected)</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopy}
+              className="text-xs"
+            >
+              <LinkIcon className="mr-1 h-3 w-3" />
+              {copied ? "Copied!" : "Copy"}
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-400">
+            <Wallet className="h-4 w-4" />
+            No wallet address connected
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">
+            {walletAddress ? "Update Wallet Address" : "Set Wallet Address"}
+          </label>
+          <div className="flex gap-2">
+            <Input
+              placeholder="0x..."
+              value={newAddress}
+              onChange={(e) => {
+                setNewAddress(e.target.value);
+                setError("");
+              }}
+              className="font-mono"
+            />
+            <Button
+              onClick={handleSave}
+              disabled={saving || !newAddress}
+              className="shrink-0"
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {saving ? "Saving..." : "Save"}
+            </Button>
+          </div>
+          <p className="text-xs text-gray-400">
+            Must start with 0x and be exactly 42 characters
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ---------- Skills Tab ---------- */
+
+function SkillsTab({ skills }: { skills: Skill[] }) {
+  if (skills.length === 0) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <Shield className="h-12 w-12 text-gray-300" />
+          <h3 className="mt-4 text-lg font-medium text-gray-900">
+            No skills yet
+          </h3>
+          <p className="mt-1 text-gray-500">
+            Complete assessments to add verified skills to your profile
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-900">
+          Skills &amp; Proficiency
+        </h2>
+        <Badge variant="secondary">{skills.length} skills</Badge>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {skills.map((skill) => (
+          <Card key={skill.id} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-5">
+              <div className="mb-3 flex items-start justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-900">
+                    {skill.skill?.name ?? `Skill ${skill.skillId.slice(0, 8)}`}
+                  </h3>
+                  {skill.skill?.category && (
+                    <p className="text-xs text-gray-500">
+                      {skill.skill.category}
+                    </p>
+                  )}
+                </div>
+                {skill.verified ? (
+                  <Badge variant="success" className="gap-1">
+                    <Shield className="h-3 w-3" />
+                    Verified
+                  </Badge>
+                ) : (
+                  <Badge variant="outline">Unverified</Badge>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Proficiency</span>
+                  <span className="font-medium text-gray-900">
+                    {skill.level}%
+                  </span>
+                </div>
+                <Progress value={skill.level} />
+                <p className="text-xs text-gray-400">
+                  {skill.level >= 80
+                    ? "Expert"
+                    : skill.level >= 60
+                    ? "Advanced"
+                    : skill.level >= 40
+                    ? "Intermediate"
+                    : "Beginner"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Activity Tab ---------- */
+
+const credentialStatusConfig: Record<
+  string,
+  { variant: "success" | "warning" | "destructive" | "default"; label: string }
+> = {
+  verified: { variant: "success", label: "Verified" },
+  pending: { variant: "warning", label: "Pending" },
+  rejected: { variant: "destructive", label: "Rejected" },
+  revoked: { variant: "destructive", label: "Revoked" },
+};
+
+const applicationStatusConfig: Record<
+  string,
+  { variant: "success" | "warning" | "destructive" | "default" | "secondary"; label: string }
+> = {
+  accepted: { variant: "success", label: "Accepted" },
+  pending: { variant: "warning", label: "Pending" },
+  rejected: { variant: "destructive", label: "Rejected" },
+  shortlisted: { variant: "default", label: "Shortlisted" },
+  withdrawn: { variant: "secondary", label: "Withdrawn" },
+};
+
+function ActivityTab({ activity }: { activity: ActivityData }) {
+  return (
+    <div className="space-y-6">
+      {/* Recent Credentials */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-blue-600" />
+            Recent Credentials
+          </CardTitle>
+          <CardDescription>Your last 5 credentials</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {activity.recentCredentials.length === 0 ? (
+            <p className="py-4 text-center text-sm text-gray-400">
+              No credentials yet
+            </p>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {activity.recentCredentials.map((cred) => {
+                const config =
+                  credentialStatusConfig[cred.status] ??
+                  credentialStatusConfig.pending;
+                return (
+                  <div
+                    key={cred.id}
+                    className="flex items-center justify-between py-3"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {cred.title}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {cred.type} &bull;{" "}
+                        {cred.issuedAt
+                          ? formatDate(cred.issuedAt)
+                          : formatDate(cred.createdAt)}
+                      </p>
+                    </div>
+                    <Badge variant={config.variant}>{config.label}</Badge>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Recent Assessments */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileCheck className="h-5 w-5 text-purple-600" />
+            Recent Assessments
+          </CardTitle>
+          <CardDescription>Your last 5 assessment attempts</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {activity.recentAttempts.length === 0 ? (
+            <p className="py-4 text-center text-sm text-gray-400">
+              No assessments taken yet
+            </p>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {activity.recentAttempts.map((attempt) => (
+                <div
+                  key={attempt.id}
+                  className="flex items-center justify-between py-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {attempt.assessment?.title ?? "Assessment"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {attempt.completedAt
+                        ? formatDate(attempt.completedAt)
+                        : "In progress"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    {attempt.score !== null && attempt.score !== undefined ? (
+                      <div>
+                        <span
+                          className={`text-sm font-semibold ${
+                            attempt.score >= 70
+                              ? "text-emerald-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {attempt.score}%
+                        </span>
+                        <p className="text-xs text-gray-400">
+                          {attempt.score >= 70 ? "Passed" : "Failed"}
+                        </p>
+                      </div>
+                    ) : (
+                      <Badge variant="warning">In Progress</Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Recent Job Applications */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-indigo-600" />
+            Recent Job Applications
+          </CardTitle>
+          <CardDescription>Your last 5 job applications</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {activity.recentApplications.length === 0 ? (
+            <p className="py-4 text-center text-sm text-gray-400">
+              No job applications yet
+            </p>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {activity.recentApplications.map((app) => {
+                const config =
+                  applicationStatusConfig[app.status] ??
+                  applicationStatusConfig.pending;
+                return (
+                  <div
+                    key={app.id}
+                    className="flex items-center justify-between py-3"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {app.job?.title ?? "Job Position"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {app.job?.company && `${app.job.company} \u2022 `}
+                        {formatDate(app.appliedAt)}
+                      </p>
+                    </div>
+                    <Badge variant={config.variant}>{config.label}</Badge>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/* ---------- Account Settings Tab ---------- */
+
+function SettingsTab() {
+  return (
+    <div className="space-y-6">
+      <ChangePasswordForm />
+      <DangerZone />
+    </div>
+  );
+}
+
+function ChangePasswordForm() {
+  const [formData, setFormData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (formData.newPassword !== formData.confirmPassword) {
+      setError("New passwords do not match");
+      return;
+    }
+    if (formData.newPassword.length < 8) {
+      setError("New password must be at least 8 characters");
+      return;
+    }
+
+    setSaving(true);
+
+    const res = await fetch("/api/users/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setError(data.error || "Failed to change password");
+      setSaving(false);
+      return;
+    }
+
+    setSuccess("Password changed successfully");
+    setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    setSaving(false);
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Change Password</CardTitle>
+        <CardDescription>
+          Update your password to keep your account secure
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-600">
+              {success}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Current Password
+            </label>
+            <Input
+              type="password"
+              placeholder="Enter current password"
+              value={formData.currentPassword}
+              onChange={(e) =>
+                setFormData({ ...formData, currentPassword: e.target.value })
+              }
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              New Password
+            </label>
+            <Input
+              type="password"
+              placeholder="At least 8 characters"
+              value={formData.newPassword}
+              onChange={(e) =>
+                setFormData({ ...formData, newPassword: e.target.value })
+              }
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Confirm New Password
+            </label>
+            <Input
+              type="password"
+              placeholder="Repeat new password"
+              value={formData.confirmPassword}
+              onChange={(e) =>
+                setFormData({ ...formData, confirmPassword: e.target.value })
+              }
+              required
+            />
+          </div>
+
+          <Button type="submit" disabled={saving} className="gap-2">
+            <Save className="h-4 w-4" />
+            {saving ? "Changing..." : "Change Password"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function DangerZone() {
+  const [password, setPassword] = useState("");
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleDelete(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setDeleting(true);
+
+    const res = await fetch("/api/users/profile", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setError(data.error || "Failed to delete account");
+      setDeleting(false);
+      return;
+    }
+
+    // Redirect to home after successful deletion
+    window.location.href = "/";
+  }
+
+  return (
+    <Card className="border-red-200">
+      <CardHeader>
+        <CardTitle className="text-red-600">Danger Zone</CardTitle>
+        <CardDescription>
+          Irreversible actions that affect your account permanently
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {!confirming ? (
+          <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4">
+            <div>
+              <p className="text-sm font-medium text-gray-900">
+                Delete Account
+              </p>
+              <p className="text-xs text-gray-500">
+                Permanently delete your account and all associated data
+              </p>
+            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setConfirming(true)}
+            >
+              Delete Account
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={handleDelete} className="space-y-4">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="mb-3 text-sm font-semibold text-red-700">
+                Are you absolutely sure? This action cannot be undone.
+              </p>
+              {error && (
+                <div className="mb-3 rounded-lg bg-red-100 p-3 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Enter your password to confirm
+                </label>
+                <Input
+                  type="password"
+                  placeholder="Your current password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mt-4 flex gap-2">
+                <Button
+                  type="submit"
+                  variant="destructive"
+                  disabled={deleting || !password}
+                >
+                  {deleting ? "Deleting..." : "Yes, Delete My Account"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setConfirming(false);
+                    setPassword("");
+                    setError("");
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </form>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
