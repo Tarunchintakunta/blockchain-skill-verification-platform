@@ -348,3 +348,153 @@ function JobCard({
                 ? `From ${formatCurrency(job.salaryMin)}`
                 : `Up to ${formatCurrency(job.salaryMax)}`}
             </div>
+          )}
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-gray-400" />
+            {job.requiredSkillIds.length} required skill
+            {job.requiredSkillIds.length !== 1 ? "s" : ""}
+            {job.preferredSkillIds.length > 0 &&
+              `, ${job.preferredSkillIds.length} preferred`}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-gray-400" />
+            Posted {formatDate(job.createdAt)}
+          </div>
+        </div>
+        {actionSlot && (
+          <div
+            className="mt-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {actionSlot}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col items-center justify-center py-12">
+        <Briefcase className="h-12 w-12 text-gray-300" />
+        <h3 className="mt-4 text-lg font-medium text-gray-900">
+          No jobs found
+        </h3>
+        <p className="mt-1 text-gray-500">{message}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PublicJobListings({
+  jobs,
+  loading,
+  searchQuery,
+  setSearchQuery,
+  filterType,
+  setFilterType,
+  onSelectJob,
+}: {
+  jobs: Job[];
+  loading: boolean;
+  searchQuery: string;
+  setSearchQuery: (v: string) => void;
+  filterType: string;
+  setFilterType: (v: string) => void;
+  onSelectJob: (job: Job) => void;
+}) {
+  return (
+    <>
+      <SearchFilterBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        filterType={filterType}
+        setFilterType={setFilterType}
+      />
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        </div>
+      ) : jobs.length === 0 ? (
+        <EmptyState message="No jobs match your search criteria" />
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {jobs.map((job) => (
+            <JobCard key={job.id} job={job} onClick={() => onSelectJob(job)} />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function CandidateView({
+  jobs,
+  loading,
+  searchQuery,
+  setSearchQuery,
+  filterType,
+  setFilterType,
+  setSelectedJob,
+  setDetailOpen,
+}: {
+  jobs: Job[];
+  loading: boolean;
+  searchQuery: string;
+  setSearchQuery: (v: string) => void;
+  filterType: string;
+  setFilterType: (v: string) => void;
+  setSelectedJob: (job: Job | null) => void;
+  setDetailOpen: (open: boolean) => void;
+}) {
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [matchedJobs, setMatchedJobs] = useState<MatchResult[]>([]);
+  const [appsLoading, setAppsLoading] = useState(false);
+  const [matchLoading, setMatchLoading] = useState(false);
+
+  async function fetchApplications() {
+    setAppsLoading(true);
+    try {
+      const res = await fetch("/api/jobs/apply");
+      const data = await res.json();
+      if (data.success) setApplications(data.data || []);
+    } catch {
+      // fail silently
+    } finally {
+      setAppsLoading(false);
+    }
+  }
+
+  async function fetchMatches() {
+    setMatchLoading(true);
+    try {
+      const res = await fetch("/api/matching");
+      const data = await res.json();
+      if (data.success) setMatchedJobs(data.data || []);
+    } catch {
+      // fail silently
+    } finally {
+      setMatchLoading(false);
+    }
+  }
+
+  function handleTabChange(value: string) {
+    if (value === "applications") fetchApplications();
+    if (value === "recommended") fetchMatches();
+  }
+
+  const jobById = (id: string) => jobs.find((j) => j.id === id);
+
+  return (
+    <Tabs defaultValue="browse" onValueChange={handleTabChange}>
+      <TabsList className="mb-6">
+        <TabsTrigger value="browse">Browse Jobs</TabsTrigger>
+        <TabsTrigger value="applications">My Applications</TabsTrigger>
+        <TabsTrigger value="recommended">Recommended</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="browse">
+        <SearchFilterBar
+          searchQuery={searchQuery}
