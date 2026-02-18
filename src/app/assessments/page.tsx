@@ -698,3 +698,133 @@ function ResultsView({
             <CardContent>
               {analysis.strengthAreas.length === 0 ? (
                 <p className="text-sm text-gray-500">No strength areas recorded.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {analysis.strengthAreas.map((area, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                      <span className="text-sm text-gray-700">{area}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="improvements">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <BookOpen className="h-5 w-5 text-amber-600" />
+                Areas for Improvement
+              </CardTitle>
+              <CardDescription>
+                Topics to focus on for better performance
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {analysis.weaknessAreas.length === 0 ? (
+                <p className="text-sm text-gray-500">No weakness areas identified.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {analysis.weaknessAreas.map((area, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                      <span className="text-sm text-gray-700">{area}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {analysis.recommendations.length > 1 && (
+                <div className="rounded-lg border border-amber-100 bg-amber-50 p-4">
+                  <p className="text-sm font-medium text-amber-900">
+                    Additional Recommendations
+                  </p>
+                  <ul className="mt-2 space-y-1">
+                    {analysis.recommendations.slice(1).map((rec, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm text-amber-700">
+                        <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" />
+                        {rec}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <div className="flex gap-3">
+        <Button onClick={onClose} className="flex-1">
+          Back to Assessments
+        </Button>
+        <Button
+          variant="outline"
+          onClick={onClose}
+          className="flex-1"
+        >
+          Try Another
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function CreateAssessmentForm({ onSuccess }: { onSuccess: () => void }) {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    skillId: "",
+    difficulty: "beginner" as "beginner" | "intermediate" | "advanced",
+    duration: 30,
+    passingScore: 70,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const res = await fetch("/api/assessments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error || "Failed to create assessment");
+      setLoading(false);
+      return;
+    }
+
+    onSuccess();
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Title</label>
+        <Input
+          placeholder="e.g., JavaScript Fundamentals"
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Skill ID</label>
+        <Input
