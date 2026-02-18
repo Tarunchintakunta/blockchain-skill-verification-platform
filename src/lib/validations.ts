@@ -36,3 +36,29 @@ export const assessmentSubmissionSchema = z.object({
   assessmentId: z.string().uuid(),
   answers: z.record(z.string(), z.number()),
 });
+
+export const jobSchema = z.object({
+  title: z.string().min(1).max(255),
+  description: z.string().min(1),
+  company: z.string().min(1).max(255),
+  location: z.string().max(255).optional(),
+  type: z.enum(["full-time", "part-time", "contract", "remote"]),
+  salaryMin: z.number().int().optional(),
+  salaryMax: z.number().int().optional(),
+  requiredSkillIds: z.array(z.string().uuid()),
+  preferredSkillIds: z.array(z.string().uuid()).default([]),
+});
+
+export const applicationSchema = z.object({
+  jobId: z.string().uuid(),
+  coverLetter: z.string().optional(),
+});
+
+export const profileUpdateSchema = z.object({
+  name: z.string().min(2).max(255).optional(),
+  bio: z.string().max(1000).optional(),
+  walletAddress: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/)
+    .optional(),
+});
