@@ -198,3 +198,153 @@ export default function JobsPage() {
                   }}
                 />
               </DialogContent>
+            </Dialog>
+          )}
+        </div>
+
+        {isCandidate ? (
+          <CandidateView
+            jobs={filteredJobs}
+            loading={loading}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            filterType={filterType}
+            setFilterType={setFilterType}
+            setSelectedJob={setSelectedJob}
+            setDetailOpen={setDetailOpen}
+          />
+        ) : isEmployer ? (
+          <EmployerView
+            jobs={filteredJobs}
+            loading={loading}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            filterType={filterType}
+            setFilterType={setFilterType}
+            setSelectedJob={setSelectedJob}
+            setDetailOpen={setDetailOpen}
+          />
+        ) : (
+          <PublicJobListings
+            jobs={filteredJobs}
+            loading={loading}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            filterType={filterType}
+            setFilterType={setFilterType}
+            onSelectJob={(job) => {
+              setSelectedJob(job);
+              setDetailOpen(true);
+            }}
+          />
+        )}
+      </main>
+
+      {selectedJob && (
+        <JobDetailDialog
+          job={selectedJob}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          showApply={isCandidate}
+        />
+      )}
+    </div>
+  );
+}
+
+function SearchFilterBar({
+  searchQuery,
+  setSearchQuery,
+  filterType,
+  setFilterType,
+}: {
+  searchQuery: string;
+  setSearchQuery: (v: string) => void;
+  filterType: string;
+  setFilterType: (v: string) => void;
+}) {
+  return (
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row">
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Input
+          placeholder="Search by title or company..."
+          className="pl-9"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <Filter className="h-4 w-4 text-gray-400 shrink-0" />
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Job type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="full-time">Full-Time</SelectItem>
+            <SelectItem value="part-time">Part-Time</SelectItem>
+            <SelectItem value="contract">Contract</SelectItem>
+            <SelectItem value="remote">Remote</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+}
+
+function JobCard({
+  job,
+  onClick,
+  actionSlot,
+}: {
+  job: Job;
+  onClick: () => void;
+  actionSlot?: React.ReactNode;
+}) {
+  return (
+    <Card
+      className="hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <CardHeader>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100">
+              <Briefcase className="h-5 w-5 text-blue-600" />
+            </div>
+            <div className="min-w-0">
+              <CardTitle className="text-base truncate">{job.title}</CardTitle>
+              <CardDescription className="flex items-center gap-1 mt-0.5">
+                <Building2 className="h-3 w-3" />
+                {job.company}
+              </CardDescription>
+            </div>
+          </div>
+          <span
+            className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${
+              jobTypeColors[job.type] || "bg-gray-100 text-gray-800"
+            }`}
+          >
+            {job.type}
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="mb-4 text-sm text-gray-500 line-clamp-2">
+          {job.description}
+        </p>
+        <div className="space-y-1.5 text-sm text-gray-600">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 text-gray-400" />
+            {job.location}
+          </div>
+          {(job.salaryMin || job.salaryMax) && (
+            <div className="flex items-center gap-1.5">
+              <DollarSign className="h-3.5 w-3.5 text-gray-400" />
+              {job.salaryMin && job.salaryMax
+                ? `${formatCurrency(job.salaryMin)} – ${formatCurrency(job.salaryMax)}`
+                : job.salaryMin
+                ? `From ${formatCurrency(job.salaryMin)}`
+                : `Up to ${formatCurrency(job.salaryMax)}`}
+            </div>
