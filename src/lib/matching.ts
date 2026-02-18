@@ -148,3 +148,29 @@ export function calculateJobMatch(
     verifiedBonus: Math.round(verifiedBonus),
     recommendation,
     confidence,
+  };
+}
+
+export function rankCandidatesForJob(
+  candidates: { id: string; profile: CandidateProfile }[],
+  job: JobRequirements
+): { candidateId: string; match: MatchResult }[] {
+  return candidates
+    .map((c) => ({
+      candidateId: c.id,
+      match: calculateJobMatch(c.profile, job),
+    }))
+    .sort((a, b) => b.match.overallScore - a.match.overallScore);
+}
+
+export function recommendJobsForCandidate(
+  candidate: CandidateProfile,
+  jobs: { id: string; requirements: JobRequirements }[]
+): { jobId: string; match: MatchResult }[] {
+  return jobs
+    .map((j) => ({
+      jobId: j.id,
+      match: calculateJobMatch(candidate, j.requirements),
+    }))
+    .sort((a, b) => b.match.overallScore - a.match.overallScore);
+}
