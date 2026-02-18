@@ -108,3 +108,33 @@ export const assessments = pgTable("assessments", {
   difficulty: varchar("difficulty", { length: 20 }).notNull(),
   duration: integer("duration").notNull(),
   passingScore: integer("passing_score").notNull().default(70),
+  questions: jsonb("questions").$type<AssessmentQuestion[]>().default([]),
+  totalAttempts: integer("total_attempts").default(0),
+  averageScore: real("average_score").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const assessmentAttempts = pgTable("assessment_attempts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  assessmentId: uuid("assessment_id")
+    .notNull()
+    .references(() => assessments.id),
+  candidateId: uuid("candidate_id")
+    .notNull()
+    .references(() => users.id),
+  score: real("score"),
+  passed: boolean("passed"),
+  answers: jsonb("answers").$type<Record<string, unknown>>(),
+  startedAt: timestamp("started_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+  aiAnalysis: jsonb("ai_analysis").$type<AIAnalysis>(),
+});
+
+export const jobs = pgTable("jobs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  employerId: uuid("employer_id")
+    .notNull()
+    .references(() => users.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").notNull(),
