@@ -6,6 +6,7 @@ import { assessmentAttempts, assessments, userSkills } from "@/db/schema";
 import { assessmentSubmissionSchema } from "@/lib/validations";
 import { eq, sql } from "drizzle-orm";
 import { analyzeAssessmentResults } from "@/lib/utils";
+import { createNotification } from "@/lib/notifications";
 import type { AssessmentQuestion } from "@/db/schema";
 
 export async function POST(req: NextRequest) {
@@ -72,6 +73,17 @@ export async function POST(req: NextRequest) {
         });
       }
     }
+
+    // Notify candidate of their result
+    await createNotification({
+      userId: candidateId,
+      title: result.passed ? "Assessment Passed!" : "Assessment Completed",
+      message: result.passed
+        ? `Congratulations! You scored ${result.score}% on "${assessment.title}" and earned a verified skill.`
+        : `You scored ${result.score}% on "${assessment.title}". ${result.score >= 50 ? "Almost there!" : "Keep practicing!"}`,
+      type: "assessment",
+      link: "/profile",
+    });
 
     return NextResponse.json({
       success: true,

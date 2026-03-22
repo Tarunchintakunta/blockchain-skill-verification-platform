@@ -8,6 +8,7 @@ import {
   issueCredentialOnChain,
   generateCredentialHash,
 } from "@/lib/blockchain";
+import { uploadToIPFS, buildCredentialMetadata } from "@/lib/ipfs";
 
 export async function POST(req: NextRequest) {
   try {
@@ -51,15 +52,46 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const issuer = await db.query.users.findFirst({
+      where: eq(users.id, credential.issuerId),
+    });
+
+    // Resolve skill names
+    const skillIds = (credential.skillIds as string[]) || [];
+    let skillNames: string[] = [];
+    if (skillIds.length > 0) {
+      const skillRecords = await db.query.skills.findMany();
+      const skillMap = new Map(skillRecords.map((s) => [s.id, s.name]));
+      skillNames = skillIds.map((id) => skillMap.get(id) || id);
+    }
+
+    // Upload metadata to IPFS
+    const metadata = buildCredentialMetadata({
+      title: credential.title,
+      description: credential.description || "",
+      issuerName: issuer?.organizationName || issuer?.name || "Unknown Issuer",
+      issuerId: credential.issuerId,
+      skills: skillNames,
+      type: credential.type,
+      issuedAt: credential.issuedAt?.toISOString() || new Date().toISOString(),
+    });
+
+    let ipfsHash: string;
+    try {
+      ipfsHash = await uploadToIPFS(metadata);
+    } catch {
+      ipfsHash = "pending";
+    }
+
     const credentialHash = generateCredentialHash({
       candidateId: credential.candidateId,
       issuerId: credential.issuerId,
       title: credential.title,
-      skills: (credential.skillIds as string[]) || [],
+      skills: skillNames,
       issuedAt: credential.issuedAt?.toISOString() || new Date().toISOString(),
     });
 
-    const metadataURI = `ipfs://${credential.ipfsHash || "pending"}`;
+    const metadataURI = `ipfs://${ipfsHash}`;
 
     const { txHash, tokenId } = await issueCredentialOnChain(
       candidate.walletAddress,
@@ -73,6 +105,7 @@ export async function POST(req: NextRequest) {
         status: "verified",
         blockchainTxHash: txHash,
         tokenId,
+        ipfsHash,
         updatedAt: new Date(),
       })
       .where(eq(credentials.id, credentialId));
@@ -83,12 +116,12 @@ export async function POST(req: NextRequest) {
       txHash,
       type: "credential_issue",
       status: "confirmed",
-      metadata: { credentialId, tokenId },
+      metadata: { credentialId, tokenId, ipfsHash },
     });
 
     return NextResponse.json({
       success: true,
-      data: { txHash, tokenId },
+      data: { txHash, tokenId, ipfsHash },
     });
   } catch {
     return NextResponse.json(

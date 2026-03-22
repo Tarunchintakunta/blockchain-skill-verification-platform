@@ -193,6 +193,26 @@ export const blockchainTransactions = pgTable("blockchain_transactions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const notifications = pgTable("notifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  type: varchar("type", { length: 50 }).notNull(),
+  isRead: boolean("is_read").default(false),
+  link: varchar("link", { length: 500 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
+}));
+
 export const usersRelations = relations(users, ({ many }) => ({
   credentials: many(credentials, { relationName: "candidateCredentials" }),
   issuedCredentials: many(credentials, { relationName: "issuerCredentials" }),
@@ -200,6 +220,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   jobs: many(jobs),
   applications: many(applications),
   userSkills: many(userSkills),
+  notifications: many(notifications),
 }));
 
 export const credentialsRelations = relations(credentials, ({ one }) => ({

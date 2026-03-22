@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Shield,
   LayoutDashboard,
@@ -13,6 +13,9 @@ import {
   Menu,
   X,
   LogOut,
+  BarChart3,
+  Settings,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,11 +28,12 @@ type NavbarProps = {
   } | null;
 };
 
-const navigation = [
+const baseNavigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Credentials", href: "/credentials", icon: Award },
   { name: "Assessments", href: "/assessments", icon: FileCheck },
   { name: "Jobs", href: "/jobs", icon: Briefcase },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Verify", href: "/verify", icon: Shield },
   { name: "Profile", href: "/profile", icon: User },
 ];
@@ -37,6 +41,37 @@ const navigation = [
 export function Navbar({ user }: NavbarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifs, setShowNotifs] = useState(false);
+  const [notifs, setNotifs] = useState<{ id: string; title: string; message: string; isRead: boolean; createdAt: string; link?: string }[]>([]);
+
+  const navigation = user?.role === "admin"
+    ? [...baseNavigation, { name: "Admin", href: "/admin", icon: Settings }]
+    : baseNavigation;
+
+  useEffect(() => {
+    if (user) {
+      fetch("/api/notifications")
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success) {
+            setUnreadCount(data.data.unreadCount);
+            setNotifs(data.data.notifications?.slice(0, 10) || []);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
+  async function markAllRead() {
+    await fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ markAllRead: true }),
+    });
+    setUnreadCount(0);
+    setNotifs((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  }
 
   return (
     <nav className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-lg">
@@ -74,6 +109,56 @@ export function Navbar({ user }: NavbarProps) {
           <div className="flex items-center gap-4">
             {user ? (
               <div className="hidden md:flex md:items-center md:gap-4">
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowNotifs(!showNotifs)}
+                    className="relative"
+                  >
+                    <Bell className="h-4 w-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </Button>
+                  {showNotifs && (
+                    <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-xl">
+                      <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+                        <p className="text-sm font-semibold text-gray-900">Notifications</p>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllRead}
+                            className="text-xs text-blue-600 hover:text-blue-700"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {notifs.length === 0 ? (
+                          <p className="px-4 py-6 text-center text-sm text-gray-400">
+                            No notifications
+                          </p>
+                        ) : (
+                          notifs.map((n) => (
+                            <div
+                              key={n.id}
+                              className={cn(
+                                "border-b border-gray-50 px-4 py-3 text-sm",
+                                !n.isRead && "bg-blue-50"
+                              )}
+                            >
+                              <p className="font-medium text-gray-900">{n.title}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">{n.message}</p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-900">
                     {user.name}

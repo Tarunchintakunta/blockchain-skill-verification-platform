@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Briefcase,
   MapPin,
@@ -177,6 +178,13 @@ export default function JobsPage() {
           </div>
 
           {isEmployer && (
+            <div className="flex gap-2">
+              <Link href="/jobs/applications">
+                <Button variant="outline" className="gap-2">
+                  <Users className="h-4 w-4" />
+                  Manage Applications
+                </Button>
+              </Link>
             <Dialog open={postJobOpen} onOpenChange={setPostJobOpen}>
               <DialogTrigger asChild>
                 <Button className="gap-2">
@@ -199,6 +207,7 @@ export default function JobsPage() {
                 />
               </DialogContent>
             </Dialog>
+            </div>
           )}
         </div>
 

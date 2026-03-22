@@ -35,6 +35,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { formatDate, truncateAddress } from "@/lib/utils";
+import { WalletConnect } from "@/components/wallet-connect";
 
 type Skill = {
   id: string;
@@ -549,32 +550,67 @@ function WalletSection({
           </div>
         )}
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">
-            {walletAddress ? "Update Wallet Address" : "Set Wallet Address"}
-          </label>
-          <div className="flex gap-2">
-            <Input
-              placeholder="0x..."
-              value={newAddress}
-              onChange={(e) => {
-                setNewAddress(e.target.value);
-                setError("");
-              }}
-              className="font-mono"
-            />
-            <Button
-              onClick={handleSave}
-              disabled={saving || !newAddress}
-              className="shrink-0"
-            >
-              <Save className="mr-2 h-4 w-4" />
-              {saving ? "Saving..." : "Save"}
-            </Button>
+        <div className="space-y-3">
+          <WalletConnect
+            currentAddress={null}
+            onConnect={async (address) => {
+              setNewAddress(address);
+              setSaving(true);
+              setError("");
+              setSuccess("");
+              const res = await fetch("/api/users/profile", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ walletAddress: address }),
+              });
+              const data = await res.json();
+              if (!res.ok || !data.success) {
+                setError(data.error || "Failed to update wallet address");
+              } else {
+                setSuccess("Wallet connected successfully");
+                onSuccess();
+              }
+              setSaving(false);
+              setNewAddress("");
+            }}
+          />
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white px-2 text-gray-400">or enter manually</span>
+            </div>
           </div>
-          <p className="text-xs text-gray-400">
-            Must start with 0x and be exactly 42 characters
-          </p>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              {walletAddress ? "Update Wallet Address" : "Set Wallet Address"}
+            </label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="0x..."
+                value={newAddress}
+                onChange={(e) => {
+                  setNewAddress(e.target.value);
+                  setError("");
+                }}
+                className="font-mono"
+              />
+              <Button
+                onClick={handleSave}
+                disabled={saving || !newAddress}
+                className="shrink-0"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {saving ? "Saving..." : "Save"}
+              </Button>
+            </div>
+            <p className="text-xs text-gray-400">
+              Must start with 0x and be exactly 42 characters
+            </p>
+          </div>
         </div>
       </CardContent>
     </Card>

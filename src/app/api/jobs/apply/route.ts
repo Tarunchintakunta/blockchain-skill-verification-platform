@@ -6,6 +6,7 @@ import { applications, jobs, userSkills } from "@/db/schema";
 import { applicationSchema } from "@/lib/validations";
 import { eq, and } from "drizzle-orm";
 import { calculateJobMatch } from "@/lib/matching";
+import { createNotification } from "@/lib/notifications";
 
 export async function POST(req: NextRequest) {
   try {
@@ -87,6 +88,15 @@ export async function POST(req: NextRequest) {
         status: "pending",
       })
       .returning();
+
+    // Notify the employer about the new application
+    await createNotification({
+      userId: job.employerId,
+      title: "New Job Application",
+      message: `A candidate applied to "${job.title}" with a ${matchResult.overallScore}% match score.`,
+      type: "application",
+      link: "/jobs/applications",
+    });
 
     return NextResponse.json(
       {
